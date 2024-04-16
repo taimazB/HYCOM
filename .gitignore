@@ -1,0 +1,5 @@
+logs/
+*.nc
+*.webp
+extracted/
+nc/
