@@ -19,18 +19,36 @@ if [[ -e ${MAIN}/.active ]] || [[ -z ${lastAvailDate} ]] || [[ ${lastAvailDate}$
 fi
 
 touch ${MAIN}/.active
+mkdir ${MAIN}/logs 2>/dev/null
 
 ############################################################################
 ##  FUNCTIONS
 
-function dl() {
+##  Download & Process
+function DnP() {
     t=$1
-    
-    wget -nc "${ftpLink}/hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
-    wget -nc "${ftpLink}/hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_ts3z.nc"
-    wget -nc "${ftpLink}/hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
+
+    file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
+    wget -nc "${ftpLink}/${file}"
+    sbatch --export=f=${file} ${MAIN}/process_HYCOM_TS.sh
+
+    file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_ts3z.nc"
+    wget -nc "${ftpLink}/${file}"
+    sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
+
+    file="hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
+    wget -nc "${ftpLink}/${file}"
+    sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
 }
-export -f dl
+
+# function dl() {
+#     t=$1
+
+#     wget -nc "${ftpLink}/hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
+#     wget -nc "${ftpLink}/hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_ts3z.nc"
+#     wget -nc "${ftpLink}/hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
+# }
+# export -f dl
 
 ##  FUNCTIONS
 ############################################################################
@@ -40,12 +58,13 @@ mkdir ${MAIN}/nc
 cd ${MAIN}/nc
 
 if [[ ${lastAvailDate} != ${lastDlDate} ]]; then
-    parallel -j 5 'dl {}' ::: $(seq 0 3 ${lastAvailTime})
+    # parallel -j 5 'dl {}' ::: $(seq 0 3 ${lastAvailTime})
+    parallel -j 8 'DnP {}' ::: $(seq 0 3 ${lastAvailTime})
 elif [[ ${lastAvailTime} != ${lastDlTime} ]]; then
-    parallel -j 5 'dl {}' ::: $(seq ${lastDlTime} 3 ${lastAvailTime})
+    parallel -j 8 'DnP {}' ::: $(seq ${lastDlTime} 3 ${lastAvailTime})
 fi
 
-echo "${lastAvailDate} ${lastAvailTime}" > ${MAIN}/.lastDlDateTime
+echo "${lastAvailDate} ${lastAvailTime}" >${MAIN}/.lastDlDateTime
 
 cd ${MAIN}
 sbatch job_HYCOM.sh

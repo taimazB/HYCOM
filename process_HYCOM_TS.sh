@@ -1,15 +1,22 @@
-source ../configs.sh
+#!/bin/bash
 
-f=$1
+#SBATCH --job-name=HYCOM_TS
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=32
+#SBATCH --time=12:00:00
+#SBATCH --output=logs/%j.out
+#SBATCH --error=logs/%j.err
+
+source ../configs.sh
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
 export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
 
-function archive {
-    field=$1
-    rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/${field}
-}
+# function archive {
+#     field=$1
+#     rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/${field}
+# }
 
 ###################################################################################
 ##  Extract temperature
@@ -95,6 +102,6 @@ done
 
 ###################################################################################
 ##  ARCHIEVE
-archive temperature &
-archive salinity &
-archive density &
+# archive temperature &
+# archive salinity &
+# archive density &
