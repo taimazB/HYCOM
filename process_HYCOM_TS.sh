@@ -4,10 +4,12 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=32
 #SBATCH --time=12:00:00
-#SBATCH --output=logs/%j.out
-#SBATCH --error=logs/%j.err
+#SBATCH --output=../logs/%j.out
+#SBATCH --error=../logs/%j.err
 
 source ../configs.sh
+echo $f
+exit
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')

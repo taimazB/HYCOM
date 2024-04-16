@@ -28,17 +28,17 @@ mkdir ${MAIN}/logs 2>/dev/null
 function DnP() {
     t=$1
 
-    file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
-    wget -nc "${ftpLink}/${file}"
-    sbatch --export=f=${file} ${MAIN}/process_HYCOM_TS.sh
+    # file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
+    # wget -nc "${ftpLink}/${file}"
+    # sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
 
     file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_ts3z.nc"
-    wget -nc "${ftpLink}/${file}"
-    sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
+    # wget -nc "${ftpLink}/${file}"
+    sbatch --export=f=${file} ${MAIN}/process_HYCOM_TS.sh
 
-    file="hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
-    wget -nc "${ftpLink}/${file}"
-    sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
+    # file="hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
+    # wget -nc "${ftpLink}/${file}"
+    # sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
 }
 
 # function dl() {
