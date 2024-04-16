@@ -8,8 +8,6 @@
 #SBATCH --error=../logs/%j.err
 
 source ../configs.sh
-echo $f
-exit
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
