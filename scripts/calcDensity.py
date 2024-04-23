@@ -82,6 +82,7 @@ rhoOut = ncD.createVariable('density', 'double', ('latitude', 'longitude'), zlib
 rhoOut.long_name = 'Density'
 rhoOut.units = 'kg/m3'
 rhoOut.coordinates = "latitude longitude"
+rhoOut.missing_value = -30000
 
 # Filling with date
 longitude[:] = lonNC[:]

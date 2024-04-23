@@ -19,52 +19,61 @@ if [[ -e ${MAIN}/.active ]] || [[ -z ${lastAvailDate} ]] || [[ ${lastAvailDate}$
 fi
 
 touch ${MAIN}/.active
-mkdir ${MAIN}/logs 2>/dev/null
 
 ############################################################################
 ##  FUNCTIONS
 
-##  Download & Process
+##  Download and Process
 function DnP() {
     t=$1
 
-    # file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
-    # wget -nc "${ftpLink}/${file}"
-    # sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
-
+    # TEMPERATURE
     file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_ts3z.nc"
-    # wget -nc "${ftpLink}/${file}"
-    sbatch --export=f=${file} ${MAIN}/process_HYCOM_TS.sh
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            sbatch --export=f=${file} ${MAIN}/process_HYCOM_TS.sh
+        fi
+    fi
 
-    # file="hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
-    # wget -nc "${ftpLink}/${file}"
-    # sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
+    # CURRENT
+    file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
+        fi
+    fi
+
+    # SURFACE
+    file="hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
+        fi
+    fi
 }
-
-# function dl() {
-#     t=$1
-
-#     wget -nc "${ftpLink}/hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
-#     wget -nc "${ftpLink}/hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_ts3z.nc"
-#     wget -nc "${ftpLink}/hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
-# }
-# export -f dl
+export -f DnP
 
 ##  FUNCTIONS
 ############################################################################
 
-rm -r ${MAIN}/nc ${MAIN}/extracted 2>/dev/null
-mkdir ${MAIN}/nc
+rm -r ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles 2>/dev/null
+mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature ${MAIN}/tiles/salinity ${MAIN}/tiles/density
+mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
 
 if [[ ${lastAvailDate} != ${lastDlDate} ]]; then
-    # parallel -j 5 'dl {}' ::: $(seq 0 3 ${lastAvailTime})
     parallel -j 8 'DnP {}' ::: $(seq 0 3 ${lastAvailTime})
 elif [[ ${lastAvailTime} != ${lastDlTime} ]]; then
     parallel -j 8 'DnP {}' ::: $(seq ${lastDlTime} 3 ${lastAvailTime})
 fi
 
 echo "${lastAvailDate} ${lastAvailTime}" >${MAIN}/.lastDlDateTime
-
-cd ${MAIN}
-sbatch job_HYCOM.sh

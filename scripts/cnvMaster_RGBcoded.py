@@ -6,6 +6,7 @@ import os
 import cv2
 import math
 import argparse
+from rasterio.fill import fillnodata
 # import matplotlib.pyplot as plt
 
 
@@ -70,12 +71,13 @@ def saveImg(i, j):
         varNewInt[varNewInt < 0] = 0
         varRGB = allColors[varNewInt].astype(np.uint8)
         # imageio.imwrite('tiles/%s/%d/%d/%d.png' % (fileName, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
-        devNull = os.system('mkdir -p tiles/%s/%d/%d' %(fileName, zoom, i))
-        cv2.imwrite('tiles/%s/%d/%d/%d.webp' % (fileName, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
+        imgDir = fileName.split('.')[0]
+        devNull = os.system('mkdir -p tiles/%s/%d/%d' %(imgDir, zoom, i))
+        cv2.imwrite('tiles/%s/%d/%d/%d.webp' % (imgDir, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
 
 
 def RGB():
-    maxValue = math.ceil((var.max()-minOrg)/step)
+    maxValue = math.ceil((np.nanmax(var)-minOrg)/step)
     colors = []
     for i in range(maxValue+1):
         r = math.floor(i/256/256)
@@ -90,7 +92,7 @@ def RGB():
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("--filePath", help="Path to File", required=True)
+parser.add_argument("--fileName", help="netCDF file name", required=True)
 parser.add_argument("--minZoom", help="Minimum Zoom Level", type=int, required=True)
 parser.add_argument("--maxZoom", help="Maximum Zoom Level", type=int, required=True)
 parser.add_argument("--minOrg", help="Absolute minimum", type=float, required=True)
@@ -98,7 +100,7 @@ parser.add_argument("--step", help="Step", type=float, required=True)
 
 args = parser.parse_args()
 
-filePath = args.filePath
+fileName = args.fileName
 minZoom = args.minZoom
 maxZoom = args.maxZoom
 minOrg = args.minOrg
@@ -107,11 +109,12 @@ step = args.step
 maxTileLat = 85.0511287798066
 tileSize = 512  # px
 
-nc = Dataset(filePath, 'r')
-fileName = os.path.basename(filePath).split('.')[0]
+nc = Dataset(fileName, 'r')
 varName = fileName.split('_')[1]
 var = nc.variables[varName][:].data
 missingValue = nc[varName].missing_value
+mask = np.bitwise_or(var == missingValue, np.isnan(var))
+fillnodata(var,mask=~mask,max_search_distance=2)
 
 ##  latitude, longitude, depth
 lonNC = nc.variables['longitude'][:].data
@@ -127,7 +130,8 @@ R = 6378137
 xNC = R * lonNC * np.pi / 180.
 yNC = R * np.log(np.tan(np.pi / 4 + latNC * np.pi / 180 / 2))
 
-var[var == missingValue] = -9999
+mask = np.bitwise_or(var == missingValue, np.isnan(var))
+var[mask] = -9999
 f = interpolate.interp2d(xNC, yNC, var, kind='linear')
 
 

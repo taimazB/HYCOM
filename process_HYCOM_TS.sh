@@ -1,107 +1,94 @@
 #!/bin/bash
 
 #SBATCH --job-name=HYCOM_TS
-#SBATCH --nodes=1
-#SBATCH --cpus-per-task=32
+#SBATCH --ntasks=32
+#SBATCH --cpus-per-task=1
 #SBATCH --time=12:00:00
 #SBATCH --output=../logs/%j.out
 #SBATCH --error=../logs/%j.err
+#SBATCH --priority=1001
 
 source ../configs.sh
+date
+
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
 export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
 
-# function archive {
-#     field=$1
-#     rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/${field}
-# }
+###################################################################################
+##  EXTRACT FIELDS FROM ORIGINAL NC
+function extract {
+    input=$1
+    field=$(echo $input | cut -d- -f1)
+    varName=$(echo $input | cut -d- -f2)
+    extractDir=${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime}
+    mkdir -p ${extractDir}
+    cdo -O -chname,${varName},${field} -select,name=${varName} -sellonlatbox,-180,180,-90,90 $f ${extractDir}/${field}.nc
+}
+export -f extract
+
+parallel "extract {}" ::: temperature-water_temp salinity-salinity
 
 ###################################################################################
-##  Extract temperature
-extractDirT=${MAIN}/extracted/temperature/${MODEL}_temperature_${saveDateTime}
-mkdir -p ${extractDirT}
-cdo -O -select,name=water_temp -sellonlatbox,-180,180,-90,90 $f ${extractDirT}/t3z.nc
-for level in 5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0; do
-    file=${extractDirT}/${MODEL}_temperature_${saveDateTime}_${level}.nc
-    cdo -O -sellevel,${level} ${extractDirT}/t3z.nc ${file}.1
-    ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-    cdo -z zip_1 -chname,water_temp,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
-    rm ${file}.*
-done
+##  EXTRACT TEMPERATURE & SALINITY LEVELS
+function extractLevel {
+    field=$1
+    level=$2
+    extractDir=${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime}
+    file=${extractDir}/${MODEL}_${field}_${saveDateTime}_${level}.nc
+    cdo -O -z zip_1 -sellevel,${level} -chname,lat,latitude -chname,lon,longitude ${extractDir}/${field}.nc ${file}
+    ncwa -O -4 -L1 -a time,depth ${file} ${file}
+    ncks -O -v ${field} ${file} ${file}
+    python3 /home/taimaz/scripts/ncZip.py ${file} ${file}
+}
+export -f extractLevel
 
-##  Extract bottom temperature
-file=${extractDirT}/${MODEL}_temperature_${saveDateTime}_bottom.nc
-cdo -O -select,name=water_temp_bottom -sellonlatbox,-180,180,-90,90 $f ${file}.1
-ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-cdo -z zip_1 -chname,water_temp_bottom,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
+levels=(5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0)
 
-rm ${extractDirT}/t3z.nc ${file}.*
+parallel "extractLevel temperature {}" ::: ${levels[@]}
+rm ${MAIN}/extracted/temperature/${MODEL}_temperature_${saveDateTime}/temperature.nc
+rsync -aurq -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/temperature/${MODEL}_temperature_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/temperature/ &
 
-###################################################################################
-##  Extract salinity
-extractDirS=${MAIN}/extracted/salinity/${MODEL}_salinity_${saveDateTime}
-mkdir -p ${extractDirS}
-cdo -O -select,name=salinity -sellonlatbox,-180,180,-90,90 $f ${extractDirS}/s3z.nc
-for level in 5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0; do
-    file=${extractDirS}/${MODEL}_salinity_${saveDateTime}_${level}.nc
-    cdo -O -sellevel,${level} ${extractDirS}/s3z.nc ${file}.1
-    ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-    cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
-    rm ${file}.*
-done
-
-##  Extract bottom salinity
-file=${extractDirS}/${MODEL}_salinity_${saveDateTime}_bottom.nc
-cdo -O -select,name=salinity_bottom -sellonlatbox,-180,180,-90,90 $f ${file}.1
-ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
-
-rm ${extractDirS}/s3z.nc
-rm ${file}.*
-rm $f
+parallel "extractLevel salinity {}" ::: ${levels[@]}
+rm ${MAIN}/extracted/salinity/${MODEL}_salinity_${saveDateTime}/salinity.nc
+rsync -aurq -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/salinity/${MODEL}_salinity_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/salinity/ &
 
 ###################################################################################
 ##  DENSITY
-extractDirD=${MAIN}/extracted/density/${MODEL}_density_${saveDateTime}
-mkdir -p ${extractDirD}
+mkdir -p ${MAIN}/extracted/density/${MODEL}_density_${saveDateTime}
 
-for level in 5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0; do
-    fileT=${extractDirT}/${MODEL}_temperature_${saveDateTime}_${level}.nc
-    fileS=${extractDirS}/${MODEL}_salinity_${saveDateTime}_${level}.nc
-    fileD=${extractDirD}/${MODEL}_density_${saveDateTime}_${level}.nc
+function density {
+    level=$1
+    fileT=${MAIN}/extracted/temperature/${MODEL}_temperature_${saveDateTime}/${MODEL}_temperature_${saveDateTime}_${level}.nc
+    fileS=${MAIN}/extracted/salinity/${MODEL}_salinity_${saveDateTime}/${MODEL}_salinity_${saveDateTime}_${level}.nc
+    fileD=${MAIN}/extracted/density/${MODEL}_density_${saveDateTime}/${MODEL}_density_${saveDateTime}_${level}.nc
     python3 ${MAIN}/scripts/calcDensity.py ${fileT} ${fileS} ${fileD}
-done
+}
+export -f density
 
-
-##  EXTRA ZIP
-cd ${extractDirT}
-for f in *; do
-    python3 /home/taimaz/scripts/ncZip.py $f
-done
-
-cd ${extractDirS}
-for f in *; do
-    python3 /home/taimaz/scripts/ncZip.py $f
-done
-
-cd ${extractDirD}
-for f in *; do
-    python3 /home/taimaz/scripts/ncZip.py $f
-done
-
+parallel "density {}" ::: ${levels[@]}
+rsync -aurq -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/density/ ${SERVER_IP}:${SERVER_DIR}/density/ &
 
 ###################################################################################
-##  TILES
-cd ${extractDirT}
-for d in *; do
-    python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --filePath="${d}/${d}.nc" --minZoom=2 --maxZoom=7 --minOrg=-100 --step=0.1
-done
+##  TILES (LEVEL 0)
+cd ${MAIN}/extracted/temperature/HYCOM_temperature_${saveDateTime}
+python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_temperature_${saveDateTime}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=-100 --step=0.1
+rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" tiles/ ${SERVER_IP}:${SERVER_DIR}/tiles/temperature/ &
 
+cd ${MAIN}/extracted/salinity/HYCOM_salinity_${saveDateTime}
+python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_salinity_${saveDateTime}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=0 --step=0.01
+rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" tiles/ ${SERVER_IP}:${SERVER_DIR}/tiles/salinity/ &
+
+cd ${MAIN}/extracted/density/HYCOM_density_${saveDateTime}
+python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_density_${saveDateTime}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=900 --step=0.1
+rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" tiles/ ${SERVER_IP}:${SERVER_DIR}/tiles/density/ &
 
 ###################################################################################
-##  ARCHIEVE
-# archive temperature &
-# archive salinity &
-# archive density &
+##  CLEANUP
+# rm -r ${MAIN}/extracted/temperature/HYCOM_temperature_${saveDateTime} ${MAIN}/extracted/salinity/HYCOM_salinity_${saveDateTime} ${MAIN}/extracted/density/HYCOM_density_${saveDateTime}
+rm ${MAIN}/nc/$f
+echo $f >> ${MAIN}/.processed
+
+
+date
