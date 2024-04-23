@@ -75,5 +75,3 @@ if [[ ${lastAvailDate} != ${lastDlDate} ]]; then
 elif [[ ${lastAvailTime} != ${lastDlTime} ]]; then
     parallel -j 8 'DnP {}' ::: $(seq ${lastDlTime} 3 ${lastAvailTime})
 fi
-
-echo "${lastAvailDate} ${lastAvailTime}" >${MAIN}/.lastDlDateTime
