@@ -28,7 +28,7 @@ function extract {
     ncwa -4 -L1 -O -a time,depth ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc
     ncks -O -v ${field} ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc
     python3 /home/taimaz/scripts/ncZip.py ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc
-    rsync -auq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc ${SERVER_IP}:${SERVER_DIR}/${field}/
+    rsync -auq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc ${SERVER_IP}:${SERVER_DIR}/${field}/ &
 }
 export -f extract
 
