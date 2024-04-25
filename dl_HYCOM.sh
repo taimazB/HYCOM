@@ -69,9 +69,4 @@ rm -r ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles 2>/dev/null
 mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature ${MAIN}/tiles/salinity ${MAIN}/tiles/density
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
-
-if [[ ${lastAvailDate} != ${lastDlDate} ]]; then
-    parallel -j 8 'DnP {}' ::: $(seq 0 3 ${lastAvailTime})
-elif [[ ${lastAvailTime} != ${lastDlTime} ]]; then
-    parallel -j 8 'DnP {}' ::: $(seq ${lastDlTime} 3 ${lastAvailTime})
-fi
+parallel -j 8 'DnP {}' ::: $(seq 0 3 180)

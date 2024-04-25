@@ -39,7 +39,7 @@ parallel "extractLevel {}" ::: ${levels[@]}
 ##  Depth average (for PP)
 cdo ensmean ${extractDir}/*.nc ${extractDir}/${MODEL}_${field}_${saveDateTime}_mean.nc
 
-rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${extractDir} ${SERVER_IP}:${SERVER_DIR}/current/ &
+# rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${extractDir} ${SERVER_IP}:${SERVER_DIR}/current/ &
 
 ###################################################################################
 ##  CLEANUP
