@@ -44,7 +44,7 @@ export -f DnP
 ############################################################################
 
 rm -r ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles 2>/dev/null
-mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature
+mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature ${MAIN}/tiles/salinity ${MAIN}/tiles/density
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
 parallel -j 8 'DnP {}' ::: $(seq 0 3 180)
