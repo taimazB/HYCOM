@@ -74,15 +74,18 @@ parallel "density {}" ::: ${levels[@]}
 ##  TILES (LEVEL 0)
 cd ${MAIN}/extracted/temperature/HYCOM_temperature_${saveDateTime}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_temperature_${saveDateTime}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=-100 --step=0.1
-# rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" tiles/ ${SERVER_IP}:${SERVER_DIR}/tiles/temperature/ &
+mv tiles/* ${MAIN}/tiles/temperature/
+rm -r tiles
 
 cd ${MAIN}/extracted/salinity/HYCOM_salinity_${saveDateTime}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_salinity_${saveDateTime}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=0 --step=0.01
-# rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" tiles/ ${SERVER_IP}:${SERVER_DIR}/tiles/salinity/ &
+mv tiles/* ${MAIN}/tiles/salinity/
+rm -r tiles
 
 cd ${MAIN}/extracted/density/HYCOM_density_${saveDateTime}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_density_${saveDateTime}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=900 --step=0.1
-# rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" tiles/ ${SERVER_IP}:${SERVER_DIR}/tiles/density/ &
+mv tiles/* ${MAIN}/tiles/density/
+rm -r tiles
 
 ###################################################################################
 ##  CLEANUP
