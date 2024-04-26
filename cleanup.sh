@@ -5,7 +5,6 @@ if [[ -e .active ]] && [[ ! -e .cleanup ]] && [[ $n -eq 0 ]]; then
 
     rsync -aur -e "ssh -p ${SERVER_PORT}" tiles ${SERVER_IP}:${SERVER_DIR}
     rsync -aur -e "ssh -p ${SERVER_PORT}" extracted/ ${SERVER_IP}:${SERVER_DIR}
-    rm -r extracted/
-    rm -r nc/
+    rm -r nc/ extracted/ tiles/
     rm .active .cleanup
 fi
