@@ -58,4 +58,4 @@ rm -r ${MAIN}/nc ${MAIN}/extracted 2>/dev/null
 mkdir -p ${MAIN}/nc ${MAIN}/extracted
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
-parallel -j 8 'DnP {}' ::: $(seq 0 3 180)
+parallel -j 4 'DnP {}' ::: $(seq 0 3 180)
