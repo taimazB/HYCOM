@@ -54,7 +54,7 @@ export -f DnP
 ##  FUNCTIONS
 ############################################################################
 
-rm -r ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles 2>/dev/null
+rm -r ${MAIN}/nc ${MAIN}/extracted 2>/dev/null
 mkdir -p ${MAIN}/nc ${MAIN}/extracted
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
