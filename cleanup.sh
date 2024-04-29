@@ -4,10 +4,10 @@ if [[ -e .active ]] && [[ ! -e .cleanup ]] && [[ $n -eq 0 ]]; then
     touch .cleanup
 
     cd ${MAIN}/tiles
-    ls | parallel 'rsync -aurq -e "ssh -p ${SERVER_PORT}" {} ${SERVER_IP}:${SERVER_DIR}/tiles'
+    ls | parallel 'rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" {} ${SERVER_IP}:${SERVER_DIR}/tiles'
     
     cd ${MAIN}/extracted
-    ls | parallel 'rsync -aurq -e "ssh -p ${SERVER_PORT}" {} ${SERVER_IP}:${SERVER_DIR}/'
+    ls | parallel 'rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" {} ${SERVER_IP}:${SERVER_DIR}/'
 
     cd ${MAIN}
     rm -r ${MAIN}/nc/ ${MAIN}/extracted/ ${MAIN}/tiles/
