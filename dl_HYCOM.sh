@@ -9,12 +9,8 @@ export ftpLink='ftps://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts'
 files=($(curl -l "ftp://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts/"))
 noOfFiles=${#files[@]}
 export lastAvailDate=$(echo ${files[$((noOfFiles - 1))]} | cut -d_ -f4 | sed 's/12$//')
-lastAvailTime=$(echo ${files[$((noOfFiles - 1))]} | cut -d_ -f5 | sed 's/t0*//')
 
-lastDlDate=$(awk '{print $1}' ${MAIN}/.lastDlDateTime)
-lastDlTime=$(awk '{print $2}' ${MAIN}/.lastDlDateTime)
-
-if [[ -e ${MAIN}/.active ]] || [[ -z ${lastAvailDate} ]] || [[ ${lastAvailDate}${lastAvailTime} == ${lastDlDate}${lastDlTime} ]]; then
+if [[ -e ${MAIN}/.active ]] || [[ -z ${lastAvailDate} ]]; then
     exit
 fi
 
