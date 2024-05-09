@@ -2,15 +2,18 @@
 
 source ./configs.sh
 
-##  Do not use more than 10 concurrent connections per IP address downloading from ftp.hycom.org
+if [[ -e ${MAIN}/.active ]] || [[ -e ${MAIN}/.cleanup ]]; then
+    exit
+fi
 
+##  Do not use more than 10 concurrent connections per IP address downloading from ftp.hycom.org
 export ftpLink='ftps://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts'
 
 files=($(curl -l "ftp://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts/"))
 noOfFiles=${#files[@]}
 export lastAvailDate=$(echo ${files[$((noOfFiles - 1))]} | cut -d_ -f4 | sed 's/12$//')
 
-if [[ -e ${MAIN}/.active ]] || [[ -z ${lastAvailDate} ]]; then
+if [[ -z ${lastAvailDate} ]]; then
     exit
 fi
 
