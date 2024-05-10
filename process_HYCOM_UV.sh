@@ -42,7 +42,7 @@ cdo ensmean ${extractDir}/*.nc ${extractDir}/${MODEL}_${field}_${saveDateTime}_m
 ###################################################################################
 ##  CLEANUP
 rm ${MAIN}/nc/$f
-echo $f >> ${MAIN}/.processed
+echo -e "`date +%F_%T`\t$f" >> ${MAIN}/.processed
 
 
 date
