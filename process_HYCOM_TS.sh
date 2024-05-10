@@ -90,7 +90,7 @@ rm -r tiles
 ###################################################################################
 ##  CLEANUP
 rm ${MAIN}/nc/$f
-echo $f >> ${MAIN}/.processed
+echo -e "`date +%F_%T`\t$f" >> ${MAIN}/.processed
 
 
 date
