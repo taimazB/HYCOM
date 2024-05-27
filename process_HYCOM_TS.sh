@@ -83,8 +83,8 @@ cd ${MAIN}/extracted/temperature/HYCOM_temperature_${HR}
 # python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_temperature_${saveDateTime}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=-100 --step=0.1
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_temperature_${HR}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=-100 --step=0.1
 (
-    # b2 sync tiles/HYCOM_temperature_${HR}_0 b2://oc-tiles/HYCOM/temperature/
-    s3cmd put --recursive --acl-public tiles/HYCOM_temperature_${HR}_0 s3://oc-tiles/HYCOM/${date}/temperature/
+    # b2 sync tiles/HYCOM_temperature_${HR}_0 b2://oc-tiles/HYCOM/temperature
+    s3cmd put --recursive --acl-public tiles/HYCOM_temperature_${HR}_0 s3://modeltiles/HYCOM/${date}/temperature/
 # mv tiles/* ${MAIN}/tiles/temperature/
     # rm -r tiles
 ) &
@@ -94,7 +94,7 @@ cd ${MAIN}/extracted/salinity/HYCOM_salinity_${HR}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_salinity_${HR}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=0 --step=0.01
 (
     # b2 sync tiles/HYCOM_salinity_${HR}_0 b2://oc-tiles/HYCOM/salinity/
-    s3cmd put --recursive --acl-public tiles/HYCOM_salinity_${HR}_0 s3://oc-tiles/HYCOM/${date}/salinity/
+    s3cmd put --recursive --acl-public tiles/HYCOM_salinity_${HR}_0 s3://modeltiles/HYCOM/${date}/salinity/
 # mv tiles/* ${MAIN}/tiles/salinity/
     # rm -r tiles
 ) &
@@ -104,7 +104,7 @@ cd ${MAIN}/extracted/density/HYCOM_density_${HR}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_density_${HR}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=900 --step=0.1
 (
     # b2 sync tiles/HYCOM_density_${HR}_0 b2://oc-tiles/HYCOM/density/
-    s3cmd put --recursive --acl-public tiles/HYCOM_density_${HR}_0 s3://oc-tiles/HYCOM/${date}/density/
+    s3cmd put --recursive --acl-public tiles/HYCOM_density_${HR}_0 s3://modeltiles/HYCOM/${date}/density/
 # mv tiles/* ${MAIN}/tiles/density/
     # rm -r tiles
 ) &
