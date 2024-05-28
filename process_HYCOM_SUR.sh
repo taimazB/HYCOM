@@ -37,6 +37,6 @@ parallel "extract {}" ::: heatFlux-qtot waterFlux-emp seaSurfaceHeight-ssh bound
 ###################################################################################
 ##  CLEANUP
 rm ${MAIN}/nc/$f
-echo $f >> ${MAIN}/.processed
+echo -e "`date +%F_%T`\t$f" >> ${MAIN}/.processed
 
 date

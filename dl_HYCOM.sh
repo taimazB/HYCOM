@@ -36,6 +36,28 @@ function DnP() {
             sbatch --export=f=${file} ${MAIN}/process_HYCOM_TS.sh
         fi
     fi
+
+    # CURRENT
+    file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
+        fi
+    fi
+
+    # SURFACE
+    file="hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
+        fi
+    fi
 }
 export -f DnP
 
@@ -46,4 +68,4 @@ export -f DnP
 # mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature ${MAIN}/tiles/salinity ${MAIN}/tiles/density
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
-parallel -j 4 'DnP {}' ::: $(seq 0 3 180)
+parallel -j 8 'DnP {}' ::: $(seq 0 3 180)
