@@ -16,8 +16,7 @@ echo $f
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 export HR=$(echo $f | cut -d_ -f5 | sed 's/t//')
 
-field="current"
-export extractDir=${MAIN}/extracted/${field}/${MODEL}_${field}_${HR}
+export extractDir=${MAIN}/extracted/current/${MODEL}_current_${HR}
 
 ###################################################################################
 ##  Extract u & v
@@ -37,9 +36,19 @@ levels=(5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 
 parallel "extractLevel {}" ::: ${levels[@]}
 
 ##  Depth average (for PP)
-cdo ensmean ${extractDir}/*.nc ${extractDir}/${MODEL}_${field}_${HR}_mean.nc
+cdo ensmean ${extractDir}/*.nc ${extractDir}/${MODEL}_current_${HR}_mean.nc
 
-aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/current/${MODEL}_current_${HR} s3://oceangns-model-files/HYCOM/${date}/current/${MODEL}_current_${HR} &
+aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/current/${MODEL}_current_${HR} s3://oceangns-model-files/${MODEL}/${date}/current/${MODEL}_current_${HR} &
+
+
+###################################################################################
+##  TILES (LEVEL 0)
+cd ${EXTRACT}
+python3 ${MAIN}/scripts/cnvMaster_current.py --fileName="${MODEL}_current_${HR}_0.nc" --minZoom=2 --maxZoom=7 --absMax=3
+(
+    s3cmd put --recursive --acl-public tiles/${MODEL}_current_${HR}_0 s3://modeltiles/${MODEL}/${date}/current/
+) &
+
 
 ###################################################################################
 ##  CLEANUP
