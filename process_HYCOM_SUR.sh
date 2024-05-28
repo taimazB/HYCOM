@@ -36,6 +36,15 @@ parallel "extract {}" ::: heatFlux-qtot waterFlux-emp seaSurfaceHeight-ssh bound
 
 
 ###################################################################################
+##  TILES (LEVEL 0)
+cd ${MAIN}/extracted/temperature/HYCOM_temperature_${HR}
+python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_temperature_${HR}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=-100 --step=0.1
+(
+    s3cmd put --recursive --acl-public tiles/HYCOM_temperature_${HR}_0 s3://modeltiles/HYCOM/${date}/temperature/
+) &
+
+
+###################################################################################
 ##  CLEANUP
 echo -e "`date +%F_%T`\t$f" >> ${MAIN}/.processed
 
