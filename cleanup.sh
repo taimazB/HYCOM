@@ -1,12 +1,11 @@
 n=`/usr/bin/squeue | grep HYCOM | wc -l`
 if [[ -e .active ]] && [[ ! -e .cleanup ]] && [[ $n -eq 0 ]]; then
+    touch .cleanup
     source ./configs.sh
-    touch ${MAIN}/.cleanup
 
-    cd ${MAIN}/extracted
-    ls | parallel 'rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" {} ${SERVER_IP}:${SERVER_DIR}/'
-
-    cd ${MAIN}
-    rm -r ${MAIN}/nc/ ${MAIN}/extracted/
-    rm ${MAIN}/.active ${MAIN}/.cleanup
+    rsync -aur -e "ssh -p ${SERVER_PORT}" tiles ${SERVER_IP}:${SERVER_DIR}
+    rsync -aur -e "ssh -p ${SERVER_PORT}" extracted/ ${SERVER_IP}:${SERVER_DIR}
+    rm -r extracted/*
+    rm -r nc/
+    rm .active .cleanup
 fi
