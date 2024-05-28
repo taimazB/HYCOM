@@ -7,6 +7,7 @@ import cv2
 import math
 import argparse
 from rasterio.fill import fillnodata
+import json
 # import matplotlib.pyplot as plt
 
 
@@ -21,17 +22,51 @@ def yMercator(lat):
     return R * np.log(np.tan(np.pi / 4 + lat * np.pi / 180 / 2))
 
 
+# def x2lon(X):
+#     return np.round(180*X/(R*np.pi),4)
+
+
+# def y2lat(Y):
+#     return np.round(360*(np.arctan(np.exp(Y/R))-np.pi/4)/(np.pi), 4)
+    
+
+# def toGeojson(varNewRounded, xTileSub, yTileSub, file):
+#     lonSub = x2lon(xTileSub)
+#     latSub = y2lat(yTileSub)
+#     features = []
+#     for i in np.arange(0,tileSize,20):
+#         for j in np.arange(0,tileSize,20):
+#             if (not np.isnan(varNewRounded[j, i])):
+#                 features.append({
+#                     "type": "Feature",
+#                     "geometry": {
+#                         "type": "Point",
+#                         "cooredinates": [lonSub[i], latSub[j]]
+#                     },
+#                     "properties": {
+#                         "value": varNewRounded[j, i]
+#                     }
+#                 })
+#     gj = {
+#         "type": "FeatureCollection",
+#         "features": features
+#     }
+#     with open(file, 'w') as f:
+#         json.dump(gj, f)
+
+
 def saveImg(i, j):
+    x, y = i, 2**zoom - j - 1
+    xTileSub = xTile[i * tileSize:(i + 1) * tileSize]
+    yTileSub = yTile[j * tileSize:(j + 1) * tileSize]
     try:
-        if (yTile[j * tileSize:(j + 1) * tileSize].min() > yNC.max()
-                or yTile[j * tileSize:(j + 1) * tileSize].max() < yNC.min()):
+        if (yTileSub.min() > yNC.max() or yTileSub.max() < yNC.min()):
             print('Exit 1')
             return
     except:
         print('Exit 2')
         return
-    varNew = f(xTile[i * tileSize:(i + 1) * tileSize],
-               yTile[j * tileSize:(j + 1) * tileSize])
+    varNew = f(xTileSub, yTileSub)
     varNew[varNew < minOrg] = np.nan
     # To trim the interpolation tail from the right side
     iLonMax = np.argmin(np.abs(xTile - xMercator(lonNC[-1])))
@@ -72,8 +107,12 @@ def saveImg(i, j):
         varRGB = allColors[varNewInt].astype(np.uint8)
         # imageio.imwrite('tiles/%s/%d/%d/%d.png' % (fileName, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
         imgDir = fileName.split('.')[0]
-        devNull = os.system('mkdir -p tiles/%s/%d/%d' %(imgDir, zoom, i))
-        cv2.imwrite('tiles/%s/%d/%d/%d.webp' % (imgDir, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
+        devNull = os.system('mkdir -p tiles/%s/%d/%d' % (imgDir, zoom, i))
+        cv2.imwrite('tiles/%s/%d/%d/%d.webp' %
+                    (imgDir, zoom, x, y), np.flipud(varRGB))
+        #
+        # toGeojson(varNewRounded, xTileSub, yTileSub, 'tiles/%s/%d/%d/%d.geojson' %
+        #           (imgDir, zoom, x, y))
 
 
 def RGB():
@@ -84,7 +123,7 @@ def RGB():
         g = math.floor((i-r*256*256)/256)
         b = i - 256*(256*r+g)
         # colors.append((r,g,b))
-        colors.append((b,g,r,255))  ## CV2 reverse RGB
+        colors.append((b, g, r, 255))  # CV2 reverse RGB
     return colors
 
 
@@ -93,9 +132,12 @@ def RGB():
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--fileName", help="netCDF file name", required=True)
-parser.add_argument("--minZoom", help="Minimum Zoom Level", type=int, required=True)
-parser.add_argument("--maxZoom", help="Maximum Zoom Level", type=int, required=True)
-parser.add_argument("--minOrg", help="Absolute minimum", type=float, required=True)
+parser.add_argument("--minZoom", help="Minimum Zoom Level",
+                    type=int, required=True)
+parser.add_argument("--maxZoom", help="Maximum Zoom Level",
+                    type=int, required=True)
+parser.add_argument("--minOrg", help="Absolute minimum",
+                    type=float, required=True)
 parser.add_argument("--step", help="Step", type=float, required=True)
 
 args = parser.parse_args()
@@ -114,14 +156,14 @@ varName = fileName.split('_')[1]
 var = nc.variables[varName][:].data
 missingValue = nc[varName].missing_value
 mask = np.bitwise_or(var == missingValue, np.isnan(var))
-fillnodata(var,mask=~mask,max_search_distance=2)
+fillnodata(var, mask=~mask, max_search_distance=2)
 
-##  latitude, longitude, depth
+# latitude, longitude, depth
 lonNC = nc.variables['longitude'][:].data
 latNC = nc.variables['latitude'][:].data
 lonNC[lonNC >= 180] -= 360
 
-if (np.nanmin(latNC)<-90 or np.nanmax(latNC)>90):
+if (np.nanmin(latNC) < -90 or np.nanmax(latNC) > 90):
     print("##  %s: Latitude range problem!" % fileName)
     exit()
 
@@ -131,7 +173,7 @@ xNC = R * lonNC * np.pi / 180.
 yNC = R * np.log(np.tan(np.pi / 4 + latNC * np.pi / 180 / 2))
 
 mask = np.bitwise_or(var == missingValue, np.isnan(var))
-var[mask] = -9999
+var[mask] = missingValue
 f = interpolate.interp2d(xNC, yNC, var, kind='linear')
 
 
