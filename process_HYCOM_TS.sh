@@ -48,7 +48,7 @@ levels=(5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 
 for field in temperature salinity; do
     parallel "extractLevel ${field} {}" ::: ${levels[@]}
     rm ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR}/${field}.nc
-    # aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR} s3://oceangns-model-files/HYCOM/${date}/${field}/${MODEL}_${field}_${HR} &
+    aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR} s3://oceangns-model-files/HYCOM/${date}/${field}/${MODEL}_${field}_${HR} &
 done
 
 ###################################################################################
@@ -65,27 +65,27 @@ function density {
 export -f density
 
 parallel "density {}" ::: ${levels[@]}
-# aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/density/${MODEL}_density_${HR} s3://oceangns-model-files/HYCOM/${date}/density/${MODEL}_density_${HR} &
+aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/density/${MODEL}_density_${HR} s3://oceangns-model-files/HYCOM/${date}/density/${MODEL}_density_${HR} &
 
 ###################################################################################
 ##  TILES (LEVEL 0)
 cd ${MAIN}/extracted/temperature/HYCOM_temperature_${HR}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_temperature_${HR}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=-100 --step=0.1
-# (
-    # s3cmd put --recursive --acl-public tiles/HYCOM_temperature_${HR}_0 s3://modeltiles/HYCOM/${date}/temperature/
-# ) &
+(
+    s3cmd put --recursive --acl-public tiles/HYCOM_temperature_${HR}_0 s3://modeltiles/HYCOM/${date}/temperature/
+) &
 
 cd ${MAIN}/extracted/salinity/HYCOM_salinity_${HR}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_salinity_${HR}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=0 --step=0.01
-# (
-    # s3cmd put --recursive --acl-public tiles/HYCOM_salinity_${HR}_0 s3://modeltiles/HYCOM/${date}/salinity/
-# ) &
+(
+    s3cmd put --recursive --acl-public tiles/HYCOM_salinity_${HR}_0 s3://modeltiles/HYCOM/${date}/salinity/
+) &
 
 cd ${MAIN}/extracted/density/HYCOM_density_${HR}
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName="HYCOM_density_${HR}_0.nc" --minZoom=2 --maxZoom=7 --minOrg=900 --step=0.1
-# (
-    # s3cmd put --recursive --acl-public tiles/HYCOM_density_${HR}_0 s3://modeltiles/HYCOM/${date}/density/
-# ) &
+(
+    s3cmd put --recursive --acl-public tiles/HYCOM_density_${HR}_0 s3://modeltiles/HYCOM/${date}/density/
+) &
 
 
 ###################################################################################
