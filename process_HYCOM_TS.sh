@@ -53,6 +53,7 @@ for field in temperature salinity; do
     parallel "extractLevel ${field} {}" ::: ${levels[@]}
     # rm ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime}/${field}.nc
     rm ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR}/${field}.nc
+    aws s3 sync --recursive --exclude "tiles/*" ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR} s3://oceangns-model-files/HYCOM/${date}/${field}/${MODEL}_${field}_${HR}
     # rsync -aurq -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/temperature/${MODEL}_temperature_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/temperature/ &
 done
 
