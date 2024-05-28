@@ -42,7 +42,7 @@ function DnP() {
     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
-        wget -nc "${ftpLink}/${file}"
+        wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
             sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
         fi
@@ -53,7 +53,7 @@ function DnP() {
     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
-        wget -nc "${ftpLink}/${file}"
+        wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
             sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
         fi
@@ -68,4 +68,8 @@ export -f DnP
 # mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature ${MAIN}/tiles/salinity ${MAIN}/tiles/density
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
-parallel -j 8 'DnP {}' ::: $(seq 0 3 180)
+# parallel -j 8 'DnP {}' ::: $(seq 0 3 180)
+for hr in {0..180..3}; do
+    DnP ${hr}
+done
+

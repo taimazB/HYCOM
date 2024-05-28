@@ -12,9 +12,9 @@ source ../configs.sh
 date
 
 
+echo $f
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
-hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
-export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
+export HR=$(echo $f | cut -d_ -f5 | sed 's/t//')
 
 ###################################################################################
 ##  EXTRACT FIELDS FROM ORIGINAL NC
@@ -24,10 +24,11 @@ function extract {
     varName=$(echo $input | cut -d- -f2)
     extractDir=${MAIN}/extracted/${field}
     mkdir -p ${extractDir}
-    cdo -O -z zip_1 -chname,${varName},${field} -select,name=${varName} -chname,lat,latitude -chname,lon,longitude -sellonlatbox,-180,180,-90,90 $f ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc
-    ncwa -4 -L1 -O -a time,depth ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc
-    ncks -O -v ${field} ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc
-    python3 /home/taimaz/scripts/ncZip.py ${extractDir}/${MODEL}_${field}_${saveDateTime}.nc
+    cdo -O -z zip_1 -chname,${varName},${field} -select,name=${varName} -chname,lat,latitude -chname,lon,longitude -sellonlatbox,-180,180,-90,90 $f ${extractDir}/${MODEL}_${field}_${HR}.nc
+    ncwa -4 -L1 -O -a time,depth ${extractDir}/${MODEL}_${field}_${HR}.nc ${extractDir}/${MODEL}_${field}_${HR}.nc
+    ncks -O -v ${field} ${extractDir}/${MODEL}_${field}_${HR}.nc ${extractDir}/${MODEL}_${field}_${HR}.nc
+    python3 /home/taimaz/scripts/ncZip.py ${extractDir}/${MODEL}_${field}_${HR}.nc
+    aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR}.nc s3://oceangns-model-files/HYCOM/${date}/${field}/ &
 }
 export -f extract
 
@@ -36,7 +37,7 @@ parallel "extract {}" ::: heatFlux-qtot waterFlux-emp seaSurfaceHeight-ssh bound
 
 ###################################################################################
 ##  CLEANUP
-rm ${MAIN}/nc/$f
 echo -e "`date +%F_%T`\t$f" >> ${MAIN}/.processed
+
 
 date
