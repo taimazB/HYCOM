@@ -53,7 +53,7 @@ for field in temperature salinity; do
     parallel "extractLevel ${field} {}" ::: ${levels[@]}
     # rm ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime}/${field}.nc
     rm ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR}/${field}.nc
-    aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR} s3://oceangns-model-files/HYCOM/${date}/${field}/${MODEL}_${field}_${HR}
+    aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/${field}/${MODEL}_${field}_${HR} s3://oceangns-model-files/HYCOM/${date}/${field}/${MODEL}_${field}_${HR} &
     # rsync -aurq -e "ssh -p ${SERVER_PORT}" ${MAIN}/extracted/temperature/${MODEL}_temperature_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/temperature/ &
 done
 
@@ -71,6 +71,7 @@ function density {
     fileS=${MAIN}/extracted/salinity/${MODEL}_salinity_${HR}/${MODEL}_salinity_${HR}_${level}.nc
     fileD=${MAIN}/extracted/density/${MODEL}_density_${HR}/${MODEL}_density_${HR}_${level}.nc
     python3 ${MAIN}/scripts/calcDensity.py ${fileT} ${fileS} ${fileD}
+    aws s3 sync --exclude "tiles/*" ${MAIN}/extracted/density/${MODEL}_density_${HR} s3://oceangns-model-files/HYCOM/${date}/density/${MODEL}_density_${HR} &
 }
 export -f density
 
