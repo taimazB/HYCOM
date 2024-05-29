@@ -12,7 +12,7 @@ source ../configs.sh
 date
 
 
-# python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName=$f --minZoom=2 --maxZoom=4
+python3 ${MAIN}/scripts/cnvMaster_RGBcoded.py --fileName=$f --minZoom=2 --maxZoom=4
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')

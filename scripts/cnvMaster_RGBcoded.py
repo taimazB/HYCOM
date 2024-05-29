@@ -7,9 +7,7 @@ import cv2
 import math
 import argparse
 from rasterio.fill import fillnodata
-import json
 from datetime import datetime, timedelta
-# import imageio
 # import matplotlib.pyplot as plt
 
 
@@ -173,10 +171,9 @@ data = temperatureNC
 varName = 'temperature'
 minOrg = -100
 step = 0.1
-with multiprocessing.Pool(1) as p:
+with multiprocessing.Pool() as p:
     p.map(genTiles, range(len(depthNC)))
 
-exit()
 ##  SALINITY
 salinityNC = nc.variables['salinity'][0]
 missingValue = nc.variables['salinity'].missing_value
