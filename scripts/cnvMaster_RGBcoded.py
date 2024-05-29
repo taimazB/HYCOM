@@ -96,14 +96,14 @@ def genTiles(iDepth):
     depth = int(depthNC[iDepth])
     values = data[iDepth]
     mask = values.mask
-    fillnodata(values, mask=~mask, max_search_distance=2)
+    values = fillnodata(values, mask=~mask, max_search_distance=2)
 
     ##  0:360 -> -180:180
     values = np.roll(values, int(len(lonNC)/2), axis=1)
     mask = np.roll(mask, int(len(lonNC)/2), axis=1)
 
     ##  INTERPOLATE
-    values[mask] = missingValue
+    # values[mask] = missingValue
     f = interpolate.interp2d(xNC, yNC, values)
 
     allColors = np.array([[0, 0, 0, 0]])
@@ -173,10 +173,10 @@ data = temperatureNC
 varName = 'temperature'
 minOrg = -100
 step = 0.1
-with multiprocessing.Pool() as p:
+with multiprocessing.Pool(1) as p:
     p.map(genTiles, range(len(depthNC)))
 
-
+exit()
 ##  SALINITY
 salinityNC = nc.variables['salinity'][0]
 missingValue = nc.variables['salinity'].missing_value
