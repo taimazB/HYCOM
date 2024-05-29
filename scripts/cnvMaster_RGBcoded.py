@@ -179,7 +179,7 @@ salinityNC = nc.variables['salinity'][0]
 missingValue = nc.variables['salinity'].missing_value
 data = salinityNC
 varName = 'salinity'
-minOrg = 0
+minOrg = 900
 step = 0.01
 with multiprocessing.Pool() as p:
     p.map(genTiles, range(len(depthNC)))
