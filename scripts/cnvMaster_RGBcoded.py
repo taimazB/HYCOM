@@ -98,10 +98,10 @@ def genTiles(iDepth):
 
     ##  0:360 -> -180:180
     values = np.roll(values, int(len(lonNC)/2), axis=1)
-    mask = np.roll(mask, int(len(lonNC)/2), axis=1)
+    # mask = np.roll(mask, int(len(lonNC)/2), axis=1)
 
     ##  INTERPOLATE
-    # values[mask] = missingValue
+    values[np.isnan(values)] = missingValue
     f = interpolate.interp2d(xNC, yNC, values)
 
     allColors = np.array([[0, 0, 0, 0]])
@@ -209,15 +209,19 @@ d0 = 4.8314*10**-4
 temperatureNC[temperatureNC<0] = np.nan
 
 def calcDensityAtDepth(iDepth):
-    density_SMOW = a0 + a1*temperatureNC[iDepth] + a2*temperatureNC[iDepth]**2 + a3*temperatureNC[iDepth]**3 + a4*temperatureNC[iDepth]**4 + a5*temperatureNC[iDepth]**5
-    B1 = b0 + b1*temperatureNC[iDepth] + b2*temperatureNC[iDepth]**2 + b3*temperatureNC[iDepth]**3 + b4*temperatureNC[iDepth]**4
-    C1 = c0 + c1*temperatureNC[iDepth] + c2*temperatureNC[iDepth]**2
-    return iDepth, density_SMOW + B1*salinityNC[iDepth] + C1*salinityNC[iDepth]**1.5 + d0*salinityNC[iDepth]**2
+    t = temperatureNC[iDepth].data
+    s = salinityNC[iDepth].data
+    density_SMOW = a0 + a1*t + a2*t**2 + a3*t**3 + a4*t**4 + a5*t**5
+    B1 = b0 + b1*t + b2*t**2 + b3*t**3 + b4*t**4
+    C1 = c0 + c1*t + c2*t**2
+    return iDepth, density_SMOW + B1*s + C1*s**1.5 + d0*s**2
 
 with multiprocessing.Pool() as p:
     data = p.map(calcDensityAtDepth, range(len(depthNC)))
 
 data = np.ma.stack(list(map(lambda x:x[1], data)))
+data.mask = np.isnan(data)
+missingValue = -30000
 varName = 'density'
 minOrg = 900
 step = 0.1
