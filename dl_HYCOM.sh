@@ -68,8 +68,5 @@ export -f DnP
 # mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature ${MAIN}/tiles/salinity ${MAIN}/tiles/density
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
-# parallel -j 8 'DnP {}' ::: $(seq 0 3 180)
-for hr in {0..180..3}; do
-    DnP ${hr}
-done
+parallel -j 4 'DnP {}' ::: $(seq 0 3 180)
 
