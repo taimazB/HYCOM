@@ -87,27 +87,27 @@ def saveImg(i, j, zoom, depth, xTile, yTile, f, allColors):
         varNewInt[varNewInt < 0] = 0
         varRGB = allColors[varNewInt].astype(np.uint8)
         # imageio.imwrite('tiles/%s/%d/%d/%d.png' % (fileName, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
-        imgDir = f"../tiles/{saveDateTime}/depth-{depth}"
+        imgDir = f"../tiles/{varName}/{saveDateTime}/depth-{depth}"
         devNull = os.system('mkdir -p %s/%d/%d' % (imgDir, zoom, x))
         cv2.imwrite('%s/%d/%d/%d.webp' % (imgDir, zoom, x, y), np.flipud(varRGB))
 
 
 def genTiles(iDepth):
     depth = int(depthNC[iDepth])
-    temperature = temperatures[iDepth]
-    mask = temperature.mask
-    fillnodata(temperature, mask=~mask, max_search_distance=2)
+    values = data[iDepth]
+    mask = values.mask
+    fillnodata(values, mask=~mask, max_search_distance=2)
 
     ##  0:360 -> -180:180
-    temperature = np.roll(temperature, int(len(lonNC)/2), axis=1)
+    values = np.roll(values, int(len(lonNC)/2), axis=1)
     mask = np.roll(mask, int(len(lonNC)/2), axis=1)
 
     ##  INTERPOLATE
-    temperature[mask] = missingValue
-    f = interpolate.interp2d(xNC, yNC, temperature)
+    values[mask] = missingValue
+    f = interpolate.interp2d(xNC, yNC, values)
 
     allColors = np.array([[0, 0, 0, 0]])
-    allColors = np.concatenate((allColors, RGB(temperature)), axis=0)
+    allColors = np.concatenate((allColors, RGB(values)), axis=0)
 
     for zoom in np.arange(minZoom, maxZoom + 1):
         print(f"##  Depth: {depth} | Zoom: {zoom}")
@@ -136,24 +136,17 @@ parser.add_argument("--minZoom", help="Minimum Zoom Level",
                     type=int, required=True)
 parser.add_argument("--maxZoom", help="Maximum Zoom Level",
                     type=int, required=True)
-parser.add_argument("--minOrg", help="Absolute minimum",
-                    type=float, required=True)
-parser.add_argument("--step", help="Step", type=float, required=True)
 
 args = parser.parse_args()
 
 fileName = args.fileName
 minZoom = args.minZoom
 maxZoom = args.maxZoom
-minOrg = args.minOrg
-step = args.step
 
 maxTileLat = 85.0511287798066
 tileSize = 512  # px
 
 nc = Dataset(fileName, 'r')
-
-temperatures = nc.variables['water_temp'][0]
 
 hours = nc.variables['time'][0].data+0
 baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')
@@ -162,8 +155,6 @@ saveDateTime = (baseTime + timedelta(hours=hours)).strftime('%Y%m%d_%H%M')
 lonNC = nc.variables['lon'][:].data
 latNC = nc.variables['lat'][:].data
 depthNC = nc.variables['depth'][:].data
-
-missingValue = nc.variables['water_temp'].missing_value
 
 ##  0:360 -> -180:180
 lonNC[lonNC >= 180] -= 360
@@ -175,5 +166,63 @@ xNC = R * lonNC * np.pi / 180.
 yNC = R * np.log(np.tan(np.pi / 4 + latNC * np.pi / 180 / 2))
 
 
+##  TEMPERATURE
+temperatureNC = nc.variables['water_temp'][0]
+missingValue = nc.variables['water_temp'].missing_value
+data = temperatureNC
+varName = 'temperature'
+minOrg = -100
+step = 0.1
+with multiprocessing.Pool() as p:
+    p.map(genTiles, range(len(depthNC)))
+
+
+##  SALINITY
+salinityNC = nc.variables['salinity'][0]
+missingValue = nc.variables['salinity'].missing_value
+data = salinityNC
+varName = 'salinity'
+minOrg = 0
+step = 0.01
+with multiprocessing.Pool() as p:
+    p.map(genTiles, range(len(depthNC)))
+
+
+##  DENSITY
+##  Calculate Density
+##  https://link.springer.com/content/pdf/bbm%3A978-3-319-18908-6%2F1.pdf
+##  temperature range: 0 - 40
+##  salinity range: 0 - 42
+a0 = 999.842594
+a1 = 6.793953 * 10**-2
+a2 = -9.095290*10**-3
+a3 = 1.001685*10**-4
+a4 = -1.120083*10**-6
+a5 = 6.536332*10**-9
+b0 = 8.2449*10**-1
+b1 = -4.0899*10**-3
+b2 = 7.6438*10**-5
+b3 = -8.2467*10**-7
+b4 = 5.3875*10**-9
+c0 = -5.7246*10**-3
+c1 = 1.0227*10**-4
+c2 = -1.6546*10**-6
+d0 = 4.8314*10**-4
+
+temperatureNC[temperatureNC<0] = np.nan
+
+def calcDensityAtDepth(iDepth):
+    density_SMOW = a0 + a1*temperatureNC[iDepth] + a2*temperatureNC[iDepth]**2 + a3*temperatureNC[iDepth]**3 + a4*temperatureNC[iDepth]**4 + a5*temperatureNC[iDepth]**5
+    B1 = b0 + b1*temperatureNC[iDepth] + b2*temperatureNC[iDepth]**2 + b3*temperatureNC[iDepth]**3 + b4*temperatureNC[iDepth]**4
+    C1 = c0 + c1*temperatureNC[iDepth] + c2*temperatureNC[iDepth]**2
+    return iDepth, density_SMOW + B1*salinityNC[iDepth] + C1*salinityNC[iDepth]**1.5 + d0*salinityNC[iDepth]**2
+
+with multiprocessing.Pool() as p:
+    data = p.map(calcDensityAtDepth, range(len(depthNC)))
+
+data = np.ma.stack(list(map(lambda x:x[1], data)))
+varName = 'density'
+minOrg = 900
+step = 0.1
 with multiprocessing.Pool() as p:
     p.map(genTiles, range(len(depthNC)))
