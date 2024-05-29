@@ -33,7 +33,7 @@ function DnP() {
     if [[ $? -ne 0 ]]; then
         wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
-            sbatch --export=f=${file} ${MAIN}/process_HYCOM_TS.sh
+            sbatch --export=f=${file} ${MAIN}/process.sh
         fi
     fi
 
