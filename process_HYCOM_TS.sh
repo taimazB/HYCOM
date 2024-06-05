@@ -15,7 +15,8 @@ date
 echo $f
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
-export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
+export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
+date=${date}_1200  ## ALL FORMATS: YYYYmmdd_HHMM
 
 ###################################################################################
 ##  EXTRACT FIELDS FROM ORIGINAL NC
