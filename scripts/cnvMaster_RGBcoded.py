@@ -108,7 +108,6 @@ def genTiles(iDepth):
     allColors = np.concatenate((allColors, RGB(values)), axis=0)
 
     for zoom in np.arange(minZoom, maxZoom + 1):
-        print(f"##  Depth: {depth} | Zoom: {zoom}")
         noOfPoints = 2**zoom * tileSize
         #
         xTile = np.linspace(xMercator(-180), xMercator(180), noOfPoints)
