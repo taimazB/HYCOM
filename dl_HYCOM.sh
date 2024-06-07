@@ -69,3 +69,4 @@ export -f DnP
 mkdir ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
 parallel -j 4 'DnP {}' ::: $(seq 0 3 180)
+sbatch ${MAIN}/preRemove.sh
