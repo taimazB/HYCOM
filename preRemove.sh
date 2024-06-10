@@ -2,9 +2,10 @@
 #SBATCH --job-name=RM_HYCOM
 #SBATCH --ntasks=32
 #SBATCH --cpus-per-task=1
-#SBATCH --time=12:00:00
-#SBATCH --output=../logs/RM_%j.out
-#SBATCH --error=../logs/RM_%j.err
+#SBATCH --time=1:00:00
+#SBATCH --output=logs/RM_%j.out
+#SBATCH --error=logs/RM_%j.err
+#SBATCH --priority=1001
 
 ##  Remove the "DONE" directory from the oldest modelDateTime directory before removing the whole directory.
 ##  This is to overcome api-dev delay in updating its list of models.
