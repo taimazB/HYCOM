@@ -16,6 +16,11 @@ rm .done
 modelDateTimes=(`s3cmd ls s3://modeltiles/HYCOM/ | cut -d/ -f5`)
 oldest=${modelDateTimes[0]}
 s3cmd rm --recursive s3://modeltiles/HYCOM/${oldest}/DONE/
-> .rm
-s3cmd put .rm s3://modeltiles/HYCOM/${oldest}/RM/
-rm .rm
+
+
+##  REMOVE THE OLDEST DIRECTORY AFTER 1 HOUR
+sleep 3600
+for field in temperature salinity density; do
+    DIRS=(`s3cmd ls s3://modeltiles/HYCOM/${oldest}/${field}/ | awk '{print $2}'`)
+    parallel 's3cmd rm --recursive {}' ::: ${DIRS[@]}
+done
