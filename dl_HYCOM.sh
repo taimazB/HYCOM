@@ -1,8 +1,9 @@
 #!/bin/bash
 
 source ./configs.sh
+n=`ls .active_* | wc -l`
 
-if [[ -e ${MAIN}/.active ]] || [[ -e ${MAIN}/.cleanup ]]; then
+if [[ $n -gt 0 ]] || [[ -e ${MAIN}/.cleanup ]]; then
     exit
 fi
 
@@ -16,8 +17,6 @@ export lastAvailDate=$(echo ${files[$((noOfFiles - 1))]} | cut -d_ -f4 | sed 's/
 if [[ -z ${lastAvailDate} ]]; then
     exit
 fi
-
-touch ${MAIN}/.active
 
 ############################################################################
 ##  FUNCTIONS
@@ -34,6 +33,7 @@ function DnP() {
         wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
             sbatch --export=f=${file} ${MAIN}/process.sh
+            touch ${MAIN}/.active_${file}
         fi
     fi
 
@@ -64,9 +64,6 @@ export -f DnP
 ##  FUNCTIONS
 ############################################################################
 
-# rm -r ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles 2>/dev/null
-# mkdir -p ${MAIN}/nc ${MAIN}/extracted ${MAIN}/tiles/temperature ${MAIN}/tiles/salinity ${MAIN}/tiles/density
-mkdir ${MAIN}/logs 2>/dev/null
+mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
 parallel -j 4 'DnP {}' ::: $(seq 0 3 180)
-sbatch ${MAIN}/preRemove.sh
