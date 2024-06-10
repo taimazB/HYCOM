@@ -30,7 +30,7 @@ def RGB(var):
         g = math.floor((i-r*256*256)/256)
         b = i - 256*(256*r+g)
         # colors.append((r,g,b))
-        colors.append((b, g, r, 255))  # CV2 reverse RGB
+        colors.append((b, g, r))  # CV2 reverse RGB
     return colors
 
 
@@ -104,7 +104,7 @@ def genTiles(iDepth):
     values[np.isnan(values)] = missingValue
     f = interpolate.interp2d(xNC, yNC, values)
 
-    allColors = np.array([[0, 0, 0, 0]])
+    allColors = np.array([[0, 0, 0]])
     allColors = np.concatenate((allColors, RGB(values)), axis=0)
 
     for zoom in np.arange(minZoom, maxZoom + 1):
