@@ -30,7 +30,7 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
     rm ${MAIN}/.active_$f
 
     ##  MARK AS DONE IF POSSIBLE
-    chk ${date}
+    ${MAIN}/chk ${date}
 ) &
 
 rm ${MAIN}/nc/$f
