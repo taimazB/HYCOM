@@ -15,7 +15,7 @@ rm .done
 ##  This is to overcome api-dev delay in updating its list of models.
 modelDateTimes=(`s3cmd ls s3://modeltiles/HYCOM/ | cut -d/ -f5`)
 ##  ALWAYS KEEP AT LEAST 3 MODEL DATETIMES
-if [[ ${#modelDateTimes[@]} -lt 3 ]]; then
+if [[ ${#modelDateTimes[@]} -le 3 ]]; then
     exit
 fi
 oldest=${modelDateTimes[0]}
