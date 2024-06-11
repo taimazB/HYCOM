@@ -10,13 +10,15 @@ fi
 ##  Do not use more than 10 concurrent connections per IP address downloading from ftp.hycom.org
 export ftpLink='ftps://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts'
 
-files=($(curl -l "ftp://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts/"))
-noOfFiles=${#files[@]}
-export lastAvailDate=$(echo ${files[$((noOfFiles - 1))]} | cut -d_ -f4 | sed 's/12$//')
+# files=($(curl -l "ftps://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts/"))
+# noOfFiles=${#files[@]}
+# export lastAvailDate=$(echo ${files[$((noOfFiles - 1))]} | cut -d_ -f4 | sed 's/12$//')
 
-if [[ -z ${lastAvailDate} ]]; then
-    exit
-fi
+export yesterday=`date -d 'yesterday' +%Y%m%d`
+
+# if [[ -z ${lastAvailDate} ]]; then
+#     exit
+# fi
 
 ############################################################################
 ##  FUNCTIONS
@@ -26,7 +28,7 @@ function DnP() {
     t=$1
 
     # TEMPERATURE
-    file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_ts3z.nc"
+    file="hycom_glby_930_${yesterday}12_t$(printf %03d ${t})_ts3z.nc"
     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
