@@ -174,12 +174,12 @@ genTiles()
 
 
 ##  SURFACE WATER FLUX
-data = nc.variables['emp'][0]
-missingValue = nc.variables['emp']._FillValue
-varName = 'surfaceWaterFlux'
-minOrg = -10
-step = 0.001
-genTiles()
+# data = nc.variables['emp'][0]
+# missingValue = nc.variables['emp']._FillValue
+# varName = 'surfaceWaterFlux'
+# minOrg = -2
+# step = 0.001
+# genTiles()
 
 
 ##  SEA SURFACE ELEVATION

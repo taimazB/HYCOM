@@ -19,7 +19,7 @@ saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
 date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
 
 (
-    for field in boundaryLayerThickness mixedLayerThickness seaSurfaceElevation surfaceHeatFlux surfaceWaterFlux; do
+    for field in boundaryLayerThickness mixedLayerThickness seaSurfaceElevation surfaceHeatFlux; do
         s3cmd put --recursive --acl-public ${MAIN}/tiles/${field}/${saveDateTime} s3://modeltiles/HYCOM/${date}/${field}/
         rm -r ${MAIN}/tiles/${filed}/${saveDateTime}
     done

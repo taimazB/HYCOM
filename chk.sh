@@ -24,7 +24,7 @@ s3cmd rm --recursive s3://modeltiles/HYCOM/${oldest}/DONE/
 
 ##  REMOVE THE OLDEST DIRECTORY AFTER 1 HOUR
 sleep 3600
-for field in temperature salinity density current; do
+for field in temperature salinity density current surfaceHeatFlux seaSurfaceElevation boundaryLayerThickness mixedLayerThickness; do
     DIRS=(`s3cmd ls s3://modeltiles/HYCOM/${oldest}/${field}/ | awk '{print $2}'`)
     parallel 's3cmd rm --recursive {}' ::: ${DIRS[@]}
 done
