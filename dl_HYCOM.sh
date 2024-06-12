@@ -26,40 +26,41 @@ export yesterday=`date -d 'yesterday' +%Y%m%d`
 ##  Download and Process
 function DnP() {
     t=$1
+    HR=`printf %03d ${t}`
 
     # TEMPERATURE
-    file="hycom_glby_930_${yesterday}12_t$(printf %03d ${t})_ts3z.nc"
+    file="hycom_glby_930_${yesterday}12_t${HR}_ts3z.nc"
     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
         wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
-            sbatch --export=f=${file} ${MAIN}/process.sh
+            sbatch --export=f=${file} ${MAIN}/process_TS.sh
             touch ${MAIN}/.active_${file}
         fi
     fi
 
-    # # CURRENT
-    # file="hycom_glby_930_${lastAvailDate}12_t$(printf %03d ${t})_uv3z.nc"
-    # grep ${file} ${MAIN}/.processed >/dev/null 2>&1
-    # ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
-    # if [[ $? -ne 0 ]]; then
-    #     wget -nc -t 2 "${ftpLink}/${file}"
-    #     if [[ -e ${file} ]]; then
-    #         sbatch --export=f=${file} ${MAIN}/process_HYCOM_UV.sh
-    #     fi
-    # fi
+    # CURRENT
+    file="hycom_glby_930_${yesterday}12_t${HR}_uv3z.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc -t 2 "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            sbatch --export=f=${file} ${MAIN}/process_UV.sh
+        fi
+    fi
 
-    # # SURFACE
-    # file="hycom_GLBy0.08_930_${lastAvailDate}12_t$(printf %03d ${t})_sur.nc"
-    # grep ${file} ${MAIN}/.processed >/dev/null 2>&1
-    # ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
-    # if [[ $? -ne 0 ]]; then
-    #     wget -nc -t 2 "${ftpLink}/${file}"
-    #     if [[ -e ${file} ]]; then
-    #         sbatch --export=f=${file} ${MAIN}/process_HYCOM_SUR.sh
-    #     fi
-    # fi
+    # SURFACE
+    file="hycom_GLBy0.08_930_${yesterday}12_t${HR}_sur.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc -t 2 "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            sbatch --export=f=${file} ${MAIN}/process_SUR.sh
+        fi
+    fi
 }
 export -f DnP
 
