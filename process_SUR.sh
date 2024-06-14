@@ -28,7 +28,7 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
     rm ${MAIN}/.active_$f
 
     ##  MARK AS DONE IF POSSIBLE
-    ${MAIN}/chk.sh ${date}
+    python3 ${MAIN}/chk.sh
 ) &
 
 rm ${MAIN}/nc/$f
