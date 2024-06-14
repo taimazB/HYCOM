@@ -20,8 +20,9 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
 
 (
     for field in boundaryLayerThickness mixedLayerThickness seaSurfaceElevation surfaceHeatFlux; do
-        s3cmd put --recursive --acl-public ${MAIN}/tiles/${field}/${saveDateTime} s3://modeltiles/HYCOM/${date}/${field}/
-        rm -r ${MAIN}/tiles/${filed}/${saveDateTime}
+        cd ${MAIN}/tiles/${field}/${saveDateTime} || exit 1
+        ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/${field}/${saveDateTime}/"
+        rm -r ${MAIN}/tiles/${field}/${saveDateTime}
     done
 
     echo -e "$(date +%F_%T)\t$f" >>${MAIN}/.processed

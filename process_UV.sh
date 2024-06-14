@@ -19,7 +19,8 @@ saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
 date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
 
 (
-    s3cmd put --recursive --acl-public ${MAIN}/tiles/current/${saveDateTime} s3://modeltiles/HYCOM/${date}/current/
+    cd ${MAIN}/tiles/current/${saveDateTime} || exit 1
+    ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/${field}/${saveDateTime}/"
     rm -r ${MAIN}/tiles/current/${saveDateTime}
 
     echo -e "$(date +%F_%T)\t$f" >>${MAIN}/.processed
