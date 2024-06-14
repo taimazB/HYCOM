@@ -20,15 +20,16 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
 
 (
     for field in temperature salinity density; do
-        s3cmd put --recursive --acl-public ${MAIN}/tiles/${field}/${saveDateTime} s3://modeltiles/HYCOM/${date}/${field}/
+        cd ${MAIN}/tiles/${field}/${saveDateTime} || exit 1
+        ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/${field}/${saveDateTime}/"
         rm -r ${MAIN}/tiles/${field}/${saveDateTime}
     done
 
     echo -e "$(date +%F_%T)\t$f" >>${MAIN}/.processed
     rm ${MAIN}/.active_$f
 
-    ##  MARK AS DONE IF POSSIBLE
-    python3 ${MAIN}/chk.sh
+    cd ${MAIN}
+    python3 chk.py
 ) &
 
 rm ${MAIN}/nc/$f

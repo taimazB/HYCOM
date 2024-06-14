@@ -1,9 +1,9 @@
 #!/bin/bash
 
 source ./configs.sh
-n=`ls .active_* | wc -l`
+n=$(ls .active_* | wc -l)
 
-if [[ $n -gt 0 ]] || [[ -e ${MAIN}/.cleanup ]]; then
+if [[ $n -gt 0 ]]; then
     exit
 fi
 
@@ -14,7 +14,7 @@ export ftpLink='ftps://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts'
 # noOfFiles=${#files[@]}
 # export lastAvailDate=$(echo ${files[$((noOfFiles - 1))]} | cut -d_ -f4 | sed 's/12$//')
 
-export yesterday=`date -d 'yesterday' +%Y%m%d`
+export yesterday=$(date -d 'yesterday' +%Y%m%d)
 
 # if [[ -z ${lastAvailDate} ]]; then
 #     exit
@@ -26,7 +26,7 @@ export yesterday=`date -d 'yesterday' +%Y%m%d`
 ##  Download and Process
 function DnP() {
     t=$1
-    HR=`printf %03d ${t}`
+    HR=$(printf %03d ${t})
 
     # TEMPERATURE
     file="hycom_glby_930_${yesterday}12_t${HR}_ts3z.nc"
@@ -35,8 +35,8 @@ function DnP() {
     if [[ $? -ne 0 ]]; then
         wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
-            sbatch --export=f=${file} ${MAIN}/process_TS.sh
             touch ${MAIN}/.active_${file}
+            sbatch --export=f=${file} ${MAIN}/process_TS.sh
         fi
     fi
 
@@ -47,6 +47,7 @@ function DnP() {
     if [[ $? -ne 0 ]]; then
         wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
+            touch ${MAIN}/.active_${file}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
         fi
     fi
@@ -58,6 +59,7 @@ function DnP() {
     if [[ $? -ne 0 ]]; then
         wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
+            touch ${MAIN}/.active_${file}
             sbatch --export=f=${file} ${MAIN}/process_SUR.sh
         fi
     fi

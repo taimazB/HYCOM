@@ -27,8 +27,8 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
     echo -e "$(date +%F_%T)\t$f" >>${MAIN}/.processed
     rm ${MAIN}/.active_$f
 
-    ##  MARK AS DONE IF POSSIBLE
-    python3 ${MAIN}/chk.sh
+    cd ${MAIN}
+    python3 chk.py
 ) &
 
 rm ${MAIN}/nc/$f

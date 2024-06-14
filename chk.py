@@ -4,7 +4,9 @@ from multiprocessing import Pool
 from glob import glob
 
 
-if (len(glob['../.active_*']) > 0):
+n = len(glob('.active_*'))
+if ( n > 0):
+    print(f"There are {n} active models. Stop!")
     exit()
 
 
@@ -29,29 +31,24 @@ toDelete = []
 paginator = client.get_paginator('list_objects_v2')
 models = ['HYCOM']
 for model in models:
-    pages = paginator.paginate(Bucket="modeltiles", Prefix=f"{
-                               model}/", Delimiter="/")
+    pages = paginator.paginate(Bucket="modeltiles", Prefix=f"{model}/", Delimiter="/")
     modelDateTimes = list(pages)[0]['CommonPrefixes']
     modelDateTimes = list(map(lambda x: x['Prefix'], modelDateTimes))
     modelDateTimes = list(map(lambda x: x.split("/")[1], modelDateTimes))
-    toDelete.append({'model': model, 'modelDateTimes': modelDateTimes[3:]})
-    modelDateTimes = modelDateTimes[:3]  # KEEP ONLY LAST 3 MODEL DATETIMES
+    toDelete.append({'model': model, 'modelDateTimes': modelDateTimes[:-3]})
+    modelDateTimes = modelDateTimes[-3:]  # KEEP ONLY LAST 3 MODEL DATETIMES
     for modelDateTime in modelDateTimes:
-        pages = paginator.paginate(Bucket="modeltiles", Prefix=f"{
-                                   model}/{modelDateTime}/", Delimiter="/")
+        pages = paginator.paginate(Bucket="modeltiles", Prefix=f"{model}/{modelDateTime}/", Delimiter="/")
         fields = list(pages)[0]['CommonPrefixes']
         fields = list(map(lambda x: x['Prefix'], fields))
         fields = list(map(lambda x: x.split("/")[2], fields))
-        if ('DONE' in fields):
-            fields.remove('DONE')
-            for field in fields:
-                pages = paginator.paginate(Bucket="modeltiles", Prefix=f"{
-                                           model}/{modelDateTime}/{field}/", Delimiter="/")
-                dateTimes = list(pages)[0]['CommonPrefixes']
-                dateTimes = list(map(lambda x: x['Prefix'], dateTimes))
-                dateTimes = list(map(lambda x: x.split("/")[3], dateTimes))
-                data.append({"model": model, "modelDateTime": modelDateTime,
-                            "field": field, "dateTimes": dateTimes})
+        for field in fields:
+            pages = paginator.paginate(Bucket="modeltiles", Prefix=f"{model}/{modelDateTime}/{field}/", Delimiter="/")
+            dateTimes = list(pages)[0]['CommonPrefixes']
+            dateTimes = list(map(lambda x: x['Prefix'], dateTimes))
+            dateTimes = list(map(lambda x: x.split("/")[3], dateTimes))
+            data.append({"model": model, "modelDateTime": modelDateTime,
+                        "field": field, "dateTimes": dateTimes})
 
 # Upload data to "avails.json"
 client.put_object(Bucket='modeltiles', Key='avails.json',
@@ -59,15 +56,20 @@ client.put_object(Bucket='modeltiles', Key='avails.json',
 
 
 # REMOVE OLD DIRECTORIES
-def delete(obj):
-    client.delete_object(Bucket="modeltiles", Key=obj['Key'])
+def delete(DIR):
+    pages = paginator.paginate(Bucket="modeltiles", Prefix=DIR)
+    for obj in list(pages)[0]['Contents']:
+        print(obj['Key'])
+        client.delete_object(Bucket="modeltiles", Key=obj['Key'])
 
 
 for obj in toDelete:
     model = obj['model']
     for modelDateTime in obj['modelDateTimes']:
-        pages = paginator.paginate(Bucket="modeltiles", Prefix=f"{
-                                   model}/{modelDateTime}/")
-        for page in pages:
-            with Pool() as p:
-                p.map(delete, page['Contents'])
+        fields = list(map(lambda x: x['Prefix'], client.list_objects(Bucket="modeltiles", Prefix=f"{model}/{modelDateTime}/", Delimiter="/")['CommonPrefixes']))
+        for field in fields:
+            dateTimes = list(map(lambda x: x['Prefix'], client.list_objects(Bucket="modeltiles", Prefix=field, Delimiter="/")['CommonPrefixes']))
+            for dateTime in dateTimes:
+                dirs = list(map(lambda x: x['Prefix'], client.list_objects(Bucket="modeltiles", Prefix=dateTime, Delimiter="/")['CommonPrefixes']))
+                with Pool() as p:
+                    p.map(delete, dirs)
