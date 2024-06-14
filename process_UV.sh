@@ -20,7 +20,7 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
 
 (
     cd ${MAIN}/tiles/current/${saveDateTime} || exit 1
-    ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/${field}/${saveDateTime}/"
+    ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/current/${saveDateTime}/"
     rm -r ${MAIN}/tiles/current/${saveDateTime}
 
     echo -e "$(date +%F_%T)\t$f" >>${MAIN}/.processed
