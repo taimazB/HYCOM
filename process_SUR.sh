@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=HYCOM_TS
+#SBATCH --job-name=HYCOM_SUR
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=12:00:00
