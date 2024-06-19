@@ -12,6 +12,7 @@ date
 source ../configs.sh
 
 python3 ${MAIN}/scripts/cnvMaster_current.py --fileName=$f --minZoom=0 --maxZoom=4 || exit 1
+${MAIN}/process_UV_OceanGNS.sh $f
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')

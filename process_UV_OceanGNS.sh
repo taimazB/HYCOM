@@ -4,32 +4,30 @@ f=$1
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
-saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
-field="current"
-extractDir=${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime}
+export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
+levels=(5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0)
+export field="current"
+export extractDir=${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime}
 
 function archive {
-    rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" ${extractDir} ${SERVER_IP}:${SERVER_DIR}/${field}
-
-    # if [[ ${counter} -ge 10 ]]; then
-    #     echo
-    #     ##  Send warning by mail                                                                                                                                                                           
-    # else
-    #     rm -r ${extractDir}
-    # fi
+    field=$1
+    rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" --rsync-path="mkdir -p ${SERVER_DIR}/${field}; rsync" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/${field}
 }
 
 
 ##  Extract u & v
 mkdir -p ${extractDir}
 cdo -O -select,name=water_u,water_v -sellonlatbox,-180,180,-90,90 $f ${extractDir}/uv3z.nc
-for level in 5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0; do
+function extCurrent {
+    level=$1
     file=${extractDir}/${MODEL}_current_${saveDateTime}_${level}.nc
     cdo -O -sellevel,${level} ${extractDir}/uv3z.nc ${file}.1
     ncwa -4 -L1 -O -a time,depth ${file}.1 ${file}.1
     cdo -O -z zip_1 -chname,water_u,u -chname,water_v,v -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.1
-done
+}
+export -f extCurrent
+parallel "extCurrent {}" ::: ${levels[@]}
 rm ${extractDir}/uv3z.nc
 
 
@@ -44,12 +42,9 @@ ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
 cdo -O -z zip_1 -chname,water_u_bottom,u -chname,water_v_bottom,v -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
 rm ${file}.1
 
-rm $f
 
 ##  EXTRA ZIP
 cd ${extractDir}
-for f in *; do
-    python3 /home/taimaz/scripts/ncZip.py $f
-done
+ls | parallel "python3 /home/taimaz/scripts/ncZip.py {}"
 
 archive current &
