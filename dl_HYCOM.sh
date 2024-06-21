@@ -60,7 +60,7 @@ function DnP() {
         wget -nc -t 2 "${ftpLink}/${file}"
         if [[ -e ${file} ]]; then
             touch ${MAIN}/.active_${file}
-            sbatch --export=f=${file} ${MAIN}/process_SUR.sh
+            ##  Submit all sur files together later
         fi
     fi
 }
@@ -72,3 +72,9 @@ export -f DnP
 mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
 parallel -j 4 'DnP {}' ::: $(seq 0 3 180)
+
+##  SUBMIT ALL SUR FILES TOGETHER
+cd ${MAIN}/nc
+for file in *_sur.nc; do
+    sbatch --export=f=${file} ${MAIN}/process_SUR.sh
+done

@@ -31,6 +31,7 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
 
     cd ${MAIN}
     python3 chk.py
+    ./OC_chk.sh
 ) &
 
 rm ${MAIN}/nc/$f
