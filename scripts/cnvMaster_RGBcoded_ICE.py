@@ -169,7 +169,7 @@ data = nc.variables['sst'][0]
 missingValue = nc.variables['sst']._FillValue
 varName = 'seaSurfaceTemperature'
 minOrg = -100
-step = 0.001
+step = 0.1
 genTiles()
 
 ##  SEA SURFACE SALINITY
