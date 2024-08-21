@@ -25,16 +25,6 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
         rm -r ${MAIN}/tiles/${field}/${saveDateTime}
     done
 
-    ##  UPLOAD SST & SSS TO TEMPERATURE & SALINITY DIRECTORIES
-    cd ${MAIN}/tiles/seaSurfaceTemperature/${saveDateTime} || exit 1
-    ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/temperature/${saveDateTime}/depth-surface/"
-    rm -r ${MAIN}/tiles/seaSurfaceTemperature/${saveDateTime}
-
-    cd ${MAIN}/tiles/seaSurfaceSalinity/${saveDateTime} || exit 1
-    ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/salinity/${saveDateTime}/depth-surface/"
-    rm -r ${MAIN}/tiles/seaSurfaceSalinity/${saveDateTime}
-
-
     echo -e "$(date +%F_%T)\t$f" >>${MAIN}/.processed
     rm ${MAIN}/.active_$f
 

@@ -164,22 +164,6 @@ xNC = R * lonNC * np.pi / 180.
 yNC = R * np.log(np.tan(np.pi / 4 + latNC * np.pi / 180 / 2))
 
 
-##  SEA SURFACE TEMPERATURE
-data = nc.variables['sst'][0]
-missingValue = nc.variables['sst']._FillValue
-varName = 'seaSurfaceTemperature'
-minOrg = -100
-step = 0.1
-genTiles()
-
-##  SEA SURFACE SALINITY
-data = nc.variables['sss'][0]
-missingValue = nc.variables['sss']._FillValue
-varName = 'seaSurfaceSalinity'
-minOrg = 0
-step = 0.01
-genTiles()
-
 ##  SEA ICE FRACTION
 data = nc.variables['sic'][0]
 missingValue = nc.variables['sic']._FillValue
