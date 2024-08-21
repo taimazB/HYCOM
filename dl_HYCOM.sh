@@ -24,11 +24,10 @@ export yesterday=$(date -d 'yesterday' +%Y%m%d)
 ##  FUNCTIONS
 
 ##  Download and Process
-function DnP() {
+function DnP_TS() {
     t=$1
     HR=$(printf %03d ${t})
 
-    # TEMPERATURE
     file="hycom_glby_930_${yesterday}12_t${HR}_ts3z.nc"
     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
@@ -39,8 +38,13 @@ function DnP() {
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
         fi
     fi
+}
+export -f DnP_TS
 
-    # CURRENT
+function DnP_UV() {
+    t=$1
+    HR=$(printf %03d ${t})
+
     file="hycom_glby_930_${yesterday}12_t${HR}_uv3z.nc"
     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
@@ -51,6 +55,12 @@ function DnP() {
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
         fi
     fi
+}
+export -f DnP_UV
+
+function DnP_SUR() {
+    t=$1
+    HR=$(printf %03d ${t})
 
     # SURFACE
     file="hycom_GLBy0.08_930_${yesterday}12_t${HR}_sur.nc"
@@ -64,17 +74,43 @@ function DnP() {
         fi
     fi
 }
-export -f DnP
+export -f DnP_SUR
+
+function DnP_ICE() {
+    t=$1
+    HR=$(printf %03d ${t})
+
+    # SURFACE
+    file="hycom_GLBy0.08_930_${yesterday}12_t${HR}_ice.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
+    if [[ $? -ne 0 ]]; then
+        wget -nc -t 2 "${ftpLink}/${file}"
+        if [[ -e ${file} ]]; then
+            touch ${MAIN}/.active_${file}
+            ##  Submit all sur files together later
+        fi
+    fi
+}
+export -f DnP_ICE
 
 ##  FUNCTIONS
 ############################################################################
 
 mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
-parallel -j 4 'DnP {}' ::: $(seq 0 3 180)
 
-##  SUBMIT ALL SUR FILES TOGETHER
+parallel -j 4 'DnP_TS {}' ::: $(seq 0 3 180)
+parallel -j 4 'DnP_UV {}' ::: $(seq 0 3 180)
+parallel -j 4 'DnP_SUR {}' ::: $(seq 0 1 180)
+parallel -j 4 'DnP_ICE {}' ::: $(seq 0 3 180)
+
+##  SUBMIT ALL SUR & ICE FILES TOGETHER
 cd ${MAIN}/nc
 for file in *_sur.nc; do
     sbatch --export=f=${file} ${MAIN}/process_SUR.sh
+done
+
+for file in *_ice.nc; do
+    sbatch --export=f=${file} ${MAIN}/process_ICE.sh
 done
