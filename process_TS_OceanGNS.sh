@@ -31,10 +31,10 @@ parallel "extTemperature {}" ::: ${levels[@]}
 
 
 ##  Extract bottom temperature
-file=${extractDirT}/${MODEL}_temperature_${saveDateTime}_bottom.nc
-cdo -O -select,name=water_temp_bottom -sellonlatbox,-180,180,-90,90 $f ${file}.1
-ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-cdo -z zip_1 -chname,water_temp_bottom,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
+# file=${extractDirT}/${MODEL}_temperature_${saveDateTime}_bottom.nc
+# cdo -O -select,name=water_temp_bottom -sellonlatbox,-180,180,-90,90 $f ${file}.1
+# ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
+# cdo -z zip_1 -chname,water_temp_bottom,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
 
 rm ${extractDirT}/t3z.nc ${file}.*
 
@@ -56,10 +56,10 @@ export -f extSalinity
 parallel "extSalinity {}" ::: ${levels[@]}
 
 ##  Extract bottom salinity
-file=${extractDirS}/${MODEL}_salinity_${saveDateTime}_bottom.nc
-cdo -O -select,name=salinity_bottom -sellonlatbox,-180,180,-90,90 $f ${file}.1
-ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
+# file=${extractDirS}/${MODEL}_salinity_${saveDateTime}_bottom.nc
+# cdo -O -select,name=salinity_bottom -sellonlatbox,-180,180,-90,90 $f ${file}.1
+# ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
+# cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
 
 rm ${extractDirS}/s3z.nc
 rm ${file}.*
