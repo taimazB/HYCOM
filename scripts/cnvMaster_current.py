@@ -151,7 +151,8 @@ maxZoom = args.maxZoom
 nc = Dataset(fileName, 'r')
 
 hours = nc.variables['time'][0].data+0
-baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')
+# baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')
+baseTime = datetime(2000,1,1)
 saveDateTime = (baseTime + timedelta(hours=hours)).strftime('%Y%m%d_%H%M')
 
 lonNC = nc.variables['lon'][:].data
