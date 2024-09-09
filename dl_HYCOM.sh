@@ -32,8 +32,10 @@ function DnP_TS() {
     # file="hycom_glby_930_${yesterday}12_t${HR}_ts3z.nc"
     fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_t3z.nc"
     fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_s3z.nc"
-    chkT=`grep ${fileT} ${MAIN}/.processed >/dev/null 2>&1`
-    chkS=`grep ${fileS} ${MAIN}/.processed >/dev/null 2>&1`
+    grep ${fileT} ${MAIN}/.processed >/dev/null 2>&1
+    chkT=$?
+    grep ${fileS} ${MAIN}/.processed >/dev/null 2>&1
+    chkS=$?
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ ${chkT} -ne 0 ]] && [[ ${chkS} -ne 0 ]]; then
@@ -56,8 +58,10 @@ function DnP_UV() {
     # file="hycom_glby_930_${yesterday}12_t${HR}_uv3z.nc"
     fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_u3z.nc"
     fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_v3z.nc"
-    chkU=`grep ${fileU} ${MAIN}/.processed >/dev/null 2>&1`
-    chkV=`grep ${fileV} ${MAIN}/.processed >/dev/null 2>&1`
+    grep ${fileU} ${MAIN}/.processed >/dev/null 2>&1
+    chkU=$?
+    grep ${fileV} ${MAIN}/.processed >/dev/null 2>&1
+    chkV=$?
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ ${chkU} -ne 0 ]] && [[ ${chkV} -ne 0 ]]; then
