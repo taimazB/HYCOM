@@ -30,19 +30,16 @@ function DnP_TS() {
     HR=$(printf %03d ${t})
 
     # file="hycom_glby_930_${yesterday}12_t${HR}_ts3z.nc"
-    fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_t3z.nc"
-    fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_s3z.nc"
-    grep ${fileT} ${MAIN}/.processed >/dev/null 2>&1
-    chkT=$?
-    grep ${fileS} ${MAIN}/.processed >/dev/null 2>&1
-    chkS=$?
+    file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_ts3z.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
-    if [[ ${chkT} -ne 0 ]] && [[ ${chkS} -ne 0 ]]; then
+    if [[ $? -ne 0 ]]; then
+        fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_t3z.nc"
+        fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_s3z.nc"
         wget -nc -t 2 "${ftpLink}/${fileT}"
         wget -nc -t 2 "${ftpLink}/${fileS}"
         if [[ -e ${fileT} ]] && [[ -e ${fileS} ]]; then
-            file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_ts3z.nc"
             cdo merge ${fileT} ${fileS} ${file}
             touch ${MAIN}/.active_${file}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
@@ -56,19 +53,16 @@ function DnP_UV() {
     HR=$(printf %03d ${t})
 
     # file="hycom_glby_930_${yesterday}12_t${HR}_uv3z.nc"
-    fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_u3z.nc"
-    fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_v3z.nc"
-    grep ${fileU} ${MAIN}/.processed >/dev/null 2>&1
-    chkU=$?
-    grep ${fileV} ${MAIN}/.processed >/dev/null 2>&1
-    chkV=$?
+    file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_uv3z.nc"
+    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ ${chkU} -ne 0 ]] && [[ ${chkV} -ne 0 ]]; then
+        fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_u3z.nc"
+        fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_v3z.nc"
         wget -nc -t 2 "${ftpLink}/${fileU}"
         wget -nc -t 2 "${ftpLink}/${fileV}"
         if [[ -e ${fileU} ]] && [[ -e ${fileV} ]]; then
-            file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_uv3z.nc"
             cdo merge ${fileU} ${fileV} ${file}
             touch ${MAIN}/.active_${file}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
