@@ -58,7 +58,7 @@ function DnP_UV() {
     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
-    if [[ ${chkU} -ne 0 ]] && [[ ${chkV} -ne 0 ]]; then
+    if [[ $? -ne 0 ]]; then
         fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_u3z.nc"
         fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_v3z.nc"
         wget -nc -t 2 "${ftpLink}/${fileU}"
