@@ -41,6 +41,7 @@ function DnP_TS() {
         wget -nc -t 2 "${ftpLink}/${fileS}"
         if [[ -e ${fileT} ]] && [[ -e ${fileS} ]]; then
             cdo merge ${fileT} ${fileS} ${file}
+            rm ${fileT} ${fileS}
             touch ${MAIN}/.active_${file}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
         fi
@@ -64,6 +65,7 @@ function DnP_UV() {
         wget -nc -t 2 "${ftpLink}/${fileV}"
         if [[ -e ${fileU} ]] && [[ -e ${fileV} ]]; then
             cdo merge ${fileU} ${fileV} ${file}
+            rm ${fileU} ${fileV}
             touch ${MAIN}/.active_${file}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
         fi
