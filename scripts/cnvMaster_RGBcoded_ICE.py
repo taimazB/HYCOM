@@ -149,7 +149,7 @@ nc = Dataset(fileName, 'r')
 
 hours = nc.variables['time'][0].data+0
 baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')
-saveDateTime = (baseTime + timedelta(hours=hours)).strftime('%Y%m%d_%H%M')
+saveDateTime = (baseTime + timedelta(hours=round(hours))).strftime('%Y%m%d_%H%M')
 
 lonNC = nc.variables['lon'][:].data
 latNC = nc.variables['lat'][:].data
