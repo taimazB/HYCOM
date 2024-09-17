@@ -11,12 +11,6 @@ from datetime import datetime, timedelta
 # import matplotlib.pyplot as plt
 
 
-##  PARAMETERS
-maxTileLat = 85.0511287798066
-tileSize = 512  # px
-absMax = 3
-step = 0.01
-
 ###################################################################
 ###########################  FUNCTIONS  ###########################
 
@@ -28,7 +22,19 @@ def yMercator(lat):
     return R * np.log(np.tan(np.pi / 4 + lat * np.pi / 180 / 2))
 
 
-def saveImg(i,j,zoom,depth,xTile,yTile,fU,fV):
+def RGB(var):
+    maxValue = math.ceil((np.nanmax(var)-minOrg)/step)
+    colors = []
+    for i in range(maxValue+1):
+        r = math.floor(i/256/256)
+        g = math.floor((i-r*256*256)/256)
+        b = i - 256*(256*r+g)
+        # colors.append((r,g,b))
+        colors.append((b, g, r))  # CV2 reverse RGB
+    return colors
+
+
+def saveImg(i,j,zoom,xTile,yTile,f,allColors):
     x, y = i, 2**zoom - j - 1
     xTileSub = xTile[i * tileSize:(i + 1) * tileSize]
     yTileSub = yTile[j * tileSize:(j + 1) * tileSize]
@@ -39,81 +45,69 @@ def saveImg(i,j,zoom,depth,xTile,yTile,fU,fV):
     except:
         print('Exit 2')
         return
-    uNew = fU(xTileSub, yTileSub)
-    vNew = fV(xTileSub, yTileSub)
-    #
-    # uNew[uNew < -absMax] = 0
-    # uNew[uNew > absMax] = 0
-    # vNew[vNew < -absMax] = 0
-    # vNew[vNew > absMax] = 0
+    varNew = f(xTileSub, yTileSub)
+    varNew[varNew < minOrg] = np.nan
     # To trim the interpolation tail from the right side
     iLonMax = np.argmin(np.abs(xTile - xMercator(lonNC[-1])))
     if ((i + 1) * tileSize > iLonMax):
         if (i * tileSize > iLonMax):
-            uNew[:, :] = np.nan
-            vNew[:, :] = np.nan
+            varNew[:, :] = np.nan
         else:
-            uNew[:, iLonMax % tileSize:] = np.nan
-            vNew[:, iLonMax % tileSize:] = np.nan
+            varNew[:, iLonMax % tileSize:] = np.nan
     #
     # To trim the interpolation tail from the left side
     iLonMin = np.argmin(np.abs(xTile - xMercator(lonNC[0])))
     if (i * tileSize < iLonMin):
         if ((i + 1) * tileSize < iLonMin):
-            uNew[:, :] = np.nan
-            vNew[:, :] = np.nan
+            varNew[:, :] = np.nan
         else:
-            uNew[:, :iLonMin % tileSize] = np.nan
-            vNew[:, :iLonMin % tileSize] = np.nan
+            varNew[:, :iLonMin % tileSize] = np.nan
     #
     # To trim the interpolation tail from the top side
     jLatMax = np.argmin(np.abs(yTile - yMercator(latNC[-1])))
     if ((j + 1) * tileSize > jLatMax):
         if (j * tileSize > jLatMax):
-            uNew[:, :] = np.nan
-            vNew[:, :] = np.nan
+            varNew[:, :] = np.nan
         else:
-            uNew[jLatMax % tileSize:, :] = np.nan
-            vNew[jLatMax % tileSize:, :] = np.nan
+            varNew[jLatMax % tileSize:, :] = np.nan
     #
     # To trim the interpolation tail from the bottom side
     jLatMin = np.argmin(np.abs(yTile - yMercator(latNC[0])))
     if (j * tileSize < jLatMin):
         if ((j + 1) * tileSize < jLatMin):
-            uNew[:, :] = np.nan
-            vNew[:, :] = np.nan
+            varNew[:, :] = np.nan
         else:
-            uNew[:jLatMin % tileSize, :] = np.nan
-            vNew[:jLatMin % tileSize, :] = np.nan
+            varNew[:jLatMin % tileSize, :] = np.nan
     #
-    if (np.any(~np.isnan(uNew))):
-        uNew = np.round(255*(uNew+absMax)/(2*absMax))
-        vNew = np.round(255*(vNew+absMax)/(2*absMax))
-        uv = np.dstack((uNew*np.nan, vNew, uNew)) ## B, G, R
-        imgDir = f"../tiles/{varName}/{saveDateTime}/depth-{depth}"
+    if (np.any(~np.isnan(varNew))):
+        varNewRounded = np.round(varNew, int(-math.log10(step)))
+        varNewInt = ((varNewRounded - minOrg) / step).astype(np.uint16)
+        varNewInt[varNewInt < 0] = 0
+        varRGB = allColors[varNewInt].astype(np.uint8)
+        # imageio.imwrite('tiles/%s/%d/%d/%d.png' % (fileName, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
+        imgDir = f"../tiles/{varName}/{saveDateTime}"
         devNull = os.system('mkdir -p %s/%d/%d' % (imgDir, zoom, x))
-        cv2.imwrite('%s/%d/%d/%d.webp' % (imgDir, zoom, x, y), np.flipud(uv))
+        cv2.imwrite('%s/%d/%d/%d.webp' % (imgDir, zoom, x, y), np.flipud(varRGB))
 
 
-def genTiles(iDepth):
-    depth = int(depthNC[iDepth])
-    u = uNC[iDepth]
-    v = vNC[iDepth]
-    mask = u.mask
-    u = fillnodata(u, mask=~mask, max_search_distance=2)
-    v = fillnodata(v, mask=~mask, max_search_distance=2)
+def genTiles():
+    global zoom, allColors, xTile, yTile, f
+    values = data
+    
+    ##  GENERATE COLORS
+    allColors = np.array([[0, 0, 0]])
+    allColors = np.concatenate((allColors, RGB(values)), axis=0)
+    
+    mask = values.mask
+    values = fillnodata(values, mask=~mask, max_search_distance=2)
 
     ##  0:360 -> -180:180
-    u = np.roll(u, int(len(lonNC)/2), axis=1)
-    v = np.roll(v, int(len(lonNC)/2), axis=1)
+    values = np.roll(values, int(len(lonNC)/2), axis=1)
     # mask = np.roll(mask, int(len(lonNC)/2), axis=1)
-
+    
     ##  INTERPOLATE
-    u[np.isnan(u)] = missingValue
-    v[np.isnan(v)] = missingValue
-    #
-    fU = interpolate.interp2d(xNC, yNC, u)
-    fV = interpolate.interp2d(xNC, yNC, v)
+    values[np.isnan(values)] = missingValue
+    f = interpolate.interp2d(xNC, yNC, values)
 
     for zoom in np.arange(minZoom, maxZoom + 1):
         noOfPoints = 2**zoom * tileSize
@@ -130,7 +124,7 @@ def genTiles(iDepth):
                         np.arange(jStart, jEnd))).T.reshape(-1, 2)
         #
         for i,j in iters:
-            saveImg(i,j,zoom,depth,xTile,yTile,fU,fV)
+            saveImg(i,j,zoom,xTile,yTile,f,allColors)
 
 ##############################################################################
 
@@ -148,16 +142,17 @@ fileName = args.fileName
 minZoom = args.minZoom
 maxZoom = args.maxZoom
 
+maxTileLat = 85.0511287798066
+tileSize = 512  # px
+
 nc = Dataset(fileName, 'r')
 
 hours = nc.variables['time'][0].data+0
-# baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')
-baseTime = datetime(2000,1,1)
-saveDateTime = (baseTime + timedelta(hours=hours)).strftime('%Y%m%d_%H%M')
+baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')
+saveDateTime = (baseTime + timedelta(hours=round(hours))).strftime('%Y%m%d_%H%M')
 
 lonNC = nc.variables['lon'][:].data
 latNC = nc.variables['lat'][:].data
-depthNC = nc.variables['depth'][:].data
 
 ##  0:360 -> -180:180
 lonNC[lonNC >= 180] -= 360
@@ -169,10 +164,46 @@ xNC = R * lonNC * np.pi / 180.
 yNC = R * np.log(np.tan(np.pi / 4 + latNC * np.pi / 180 / 2))
 
 
-##  UV
-uNC = nc.variables['water_u'][0]
-vNC = nc.variables['water_v'][0]
-missingValue = nc.variables['water_u'].missing_value
-varName = 'current'
-with multiprocessing.Pool() as p:
-    p.map(genTiles, range(len(depthNC)))
+##  SURFACE HEAT FLUX
+data = nc.variables['qtot'][0]
+missingValue = nc.variables['qtot']._FillValue
+varName = 'surfaceHeatFlux'
+minOrg = -5000
+step = 1
+genTiles()
+
+
+##  SURFACE WATER FLUX
+# data = nc.variables['emp'][0]
+# missingValue = nc.variables['emp']._FillValue
+# varName = 'surfaceWaterFlux'
+# minOrg = -2
+# step = 0.001
+# genTiles()
+
+
+##  SEA SURFACE ELEVATION
+data = nc.variables['ssh'][0]
+missingValue = nc.variables['ssh']._FillValue
+varName = 'seaSurfaceElevation'
+minOrg = -10
+step = 0.001
+genTiles()
+
+
+##  SEA BOUNDARY LAYER THICKNESS
+data = nc.variables['surface_boundary_layer_thickness'][0]
+missingValue = nc.variables['surface_boundary_layer_thickness']._FillValue
+varName = 'boundaryLayerThickness'
+minOrg = 0
+step = 1
+genTiles()
+
+
+##  MIXED LAYER THICKNESS
+data = nc.variables['mixed_layer_thickness'][0]
+missingValue = nc.variables['mixed_layer_thickness']._FillValue
+varName = 'mixedLayerThickness'
+minOrg = 0
+step = 1
+genTiles()
