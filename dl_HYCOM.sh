@@ -115,10 +115,10 @@ export -f DnP_ICE
 mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
 cd ${MAIN}/nc
 
-parallel -j 4 'DnP_TS {}' ::: $(seq 0 3 180)
-parallel -j 4 'DnP_UV {}' ::: $(seq 0 3 180)
-# parallel -j 4 'DnP_SUR {}' ::: $(seq 0 1 180)
-parallel -j 4 'DnP_ICE {}' ::: $(seq 0 1 180)
+parallel -j 4 'DnP_TS {}' ::: $(seq 0 3 177)
+parallel -j 4 'DnP_UV {}' ::: $(seq 0 3 177)
+# parallel -j 4 'DnP_SUR {}' ::: $(seq 0 1 177)
+parallel -j 4 'DnP_ICE {}' ::: $(seq 0 1 179)
 
 ##  SUBMIT ALL SUR & ICE FILES TOGETHER
 # cd ${MAIN}/nc
