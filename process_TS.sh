@@ -30,7 +30,7 @@ date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
     rm ${MAIN}/.active_$f
 
     cd ${MAIN}
-    python3 chk.py
+    python3 ../chk.py
 ) &
 
 rm ${MAIN}/nc/$f
