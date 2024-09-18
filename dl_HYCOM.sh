@@ -1,11 +1,13 @@
 #!/bin/bash
 
 source ./configs.sh
-n=$(ls .active_* | wc -l)
+n=$(ls .active* | wc -l)
 
 if [[ $n -gt 0 ]]; then
     exit
 fi
+
+> ${MAIN}/.active
 
 ##  Do not use more than 10 concurrent connections per IP address downloading from ftp.hycom.org
 # export ftpLink='ftps://ftp.hycom.org/datasets/GLBy0.08/expt_93.0/data/forecasts'
@@ -129,3 +131,5 @@ parallel -j 4 'DnP_ICE {}' ::: $(seq 0 1 179)
 for file in *_ice.nc; do
     sbatch --export=f=${file} ${MAIN}/process_ICE.sh
 done
+
+rm ${MAIN}/.active
