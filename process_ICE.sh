@@ -9,7 +9,7 @@
 #SBATCH --priority=TOP
 
 date
-source ../configs.sh
+source ./configs.sh
 
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded_ICE.py --fileName=$f --minZoom=0 --maxZoom=4 || exit 1
 

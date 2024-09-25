@@ -28,7 +28,7 @@ function DnP_TS() {
         fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_s3z.nc"
         wget -nc -t 2 "${ftpLink}/${fileT}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileS}" -P ${MAIN}/nc
-        if [[ -e ${fileT} ]] && [[ -e ${fileS} ]]; then
+        if [[ -e ${MAIN}/nc/${fileT} ]] && [[ -e ${MAIN}/nc/${fileS} ]]; then
             cdo merge ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
             touch ${MAIN}/.active_${file}
@@ -50,37 +50,18 @@ function DnP_UV() {
     if [[ $? -ne 0 ]]; then
         fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_u3z.nc"
         fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_v3z.nc"
-        wget -nc -t 2 "${ftpLink}/${fileU}"
-        wget -nc -t 2 "${ftpLink}/${fileV}"
-        if [[ -e ${fileU} ]] && [[ -e ${fileV} ]]; then
+        wget -nc -t 2 "${ftpLink}/${fileU}" -P ${MAIN}/nc
+        wget -nc -t 2 "${ftpLink}/${fileV}" -P ${MAIN}/nc
+        if [[ -e ${MAIN}/nc/${fileU} ]] && [[ -e ${MAIN}/nc/${fileV} ]]; then
+            cdo merge ${fileU} ${fileV} ${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
             touch ${MAIN}/.active_${file}
-            cdo merge ${fileU} ${fileV} ${file}
             rm ${fileU} ${fileV}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
         fi
     fi
 }
 export -f DnP_UV
-
-# function DnP_SUR() {
-#     t=$1
-#     HR=$(printf %03d ${t})
-
-#     # SURFACE
-#     file="hycom_GLBy0.08_930_${yesterday}12_t${HR}_sur.nc"
-#     grep ${file} ${MAIN}/.processed >/dev/null 2>&1
-
-#     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
-#     if [[ $? -ne 0 ]]; then
-#         wget -nc -t 2 "${ftpLink}/${file}"
-#         if [[ -e ${file} ]]; then
-#             touch ${MAIN}/.active_${file}
-#             ##  Submit all sur files together later
-#         fi
-#     fi
-# }
-# export -f DnP_SUR
 
 function DnP_ICE() {
     t=$1
@@ -92,8 +73,8 @@ function DnP_ICE() {
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
-        wget -nc -t 2 "${ftpLink}/${file}"
-        if [[ -e ${file} ]]; then
+        wget -nc -t 2 "${ftpLink}/${file}" -P ${MAIN}/nc
+        if [[ -e ${MAIN}/nc/${file} ]]; then
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
             touch ${MAIN}/.active_${file}
             ##  Submit all sur files together later

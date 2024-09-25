@@ -90,7 +90,7 @@ def saveImg(i,j,zoom,depth,xTile,yTile,fU,fV):
         uNew = np.round(255*(uNew+absMax)/(2*absMax))
         vNew = np.round(255*(vNew+absMax)/(2*absMax))
         uv = np.dstack((uNew*np.nan, vNew, uNew)) ## B, G, R
-        imgDir = f"../tiles/{varName}/{saveDateTime}/depth-{depth}"
+        imgDir = f"tiles/{varName}/{saveDateTime}/depth-{depth}"
         devNull = os.system('mkdir -p %s/%d/%d' % (imgDir, zoom, x))
         cv2.imwrite('%s/%d/%d/%d.webp' % (imgDir, zoom, x, y), np.flipud(uv))
 
@@ -148,7 +148,7 @@ fileName = args.fileName
 minZoom = args.minZoom
 maxZoom = args.maxZoom
 
-nc = Dataset(fileName, 'r')
+nc = Dataset(f"nc/{fileName}", 'r')
 
 hours = nc.variables['time'][0].data+0
 # baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')
