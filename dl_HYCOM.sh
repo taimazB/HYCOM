@@ -53,10 +53,10 @@ function DnP_UV() {
         wget -nc -t 2 "${ftpLink}/${fileU}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileV}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileU} ]] && [[ -e ${MAIN}/nc/${fileV} ]]; then
-            cdo merge ${fileU} ${fileV} ${file}
+            cdo merge ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
             touch ${MAIN}/.active_${file}
-            rm ${fileU} ${fileV}
+            rm ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
         fi
     fi
