@@ -85,7 +85,7 @@ def saveImg(i, j, zoom, depth, xTile, yTile, f, allColors):
         varNewInt[varNewInt < 0] = 0
         varRGB = allColors[varNewInt].astype(np.uint8)
         # imageio.imwrite('tiles/%s/%d/%d/%d.png' % (fileName, zoom, i, 2**zoom - j - 1), np.flipud(varRGB))
-        imgDir = f"../tiles/{varName}/{saveDateTime}/depth-{depth}"
+        imgDir = f"tiles/{varName}/{saveDateTime}/depth-{depth}"
         devNull = os.system('mkdir -p %s/%d/%d' % (imgDir, zoom, x))
         cv2.imwrite('%s/%d/%d/%d.webp' % (imgDir, zoom, x, y), np.flipud(varRGB))
 
@@ -143,7 +143,7 @@ maxZoom = args.maxZoom
 maxTileLat = 85.0511287798066
 tileSize = 512  # px
 
-nc = Dataset(fileName, 'r')
+nc = Dataset(f"nc/{fileName}", 'r')
 
 hours = nc.variables['time'][0].data+0
 # baseTime = datetime.strptime(nc.variables['time'].time_origin, '%Y-%m-%d %H:%M:%S')

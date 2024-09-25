@@ -9,7 +9,7 @@
 #SBATCH --priority=1001
 
 date
-source ../configs.sh
+source ./configs.sh
 
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded_TS.py --fileName=$f --minZoom=0 --maxZoom=4 || exit 1
 

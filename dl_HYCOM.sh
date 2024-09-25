@@ -29,10 +29,10 @@ function DnP_TS() {
         wget -nc -t 2 "${ftpLink}/${fileT}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileS}" -P ${MAIN}/nc
         if [[ -e ${fileT} ]] && [[ -e ${fileS} ]]; then
+            cdo merge ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
             touch ${MAIN}/.active_${file}
-            cdo merge ${fileT} ${fileS} ${file}
-            rm ${fileT} ${fileS}
+            rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
         fi
     fi
