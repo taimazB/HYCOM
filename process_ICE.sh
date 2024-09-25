@@ -4,8 +4,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --time=12:00:00
-#SBATCH --output=../logs/%j.out
-#SBATCH --error=../logs/%j.err
+#SBATCH --output=./logs/%j.out
+#SBATCH --error=./logs/%j.err
 #SBATCH --priority=TOP
 
 date
