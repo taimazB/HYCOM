@@ -16,21 +16,15 @@ python3 ${MAIN}/scripts/cnvMaster_RGBcoded_ICE.py --fileName=$f --minZoom=0 --ma
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
 saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
-date=${date}_1200 ## ALL FORMATS: YYYYmmdd_HHMM
 
 (
     for field in seaiceFraction seaiceThickness; do
-        cd ${MAIN}/tiles/${field}/${saveDateTime} || exit 1
-        ls | parallel "s3cmd put -q -r --acl-public {} s3://modeltiles/HYCOM/${date}/${field}/${saveDateTime}/"
-        rm -r ${MAIN}/tiles/${field}/${saveDateTime}
+        rsync -aur --rsync-path="mkdir -p ${SERVER_DIR}.new/${field} && rsync" ${MAIN}/tiles/${field}/${saveDateTime} root@${SERVER_IP}:${SERVER_DIR}.new/${field}/
     done
 
-    echo -e "$(date +%F_%T)\t$f" >>${MAIN}/.processed
-    rm ${MAIN}/.active_$f
-
     cd ${MAIN}
-    python3 ../chk.py
-    ${MAIN}/OC_chk.sh
+    rm ${MAIN}/.active_$f
+    ./finalize.sh
 ) &
 
 rm ${MAIN}/nc/$f
