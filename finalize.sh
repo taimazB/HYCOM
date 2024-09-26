@@ -7,8 +7,8 @@ if [[ $n -eq 0 ]]; then
 
     ## UPDATE SERVER
     lastProcessedDate=$(tail -1 .processed | cut -f2 | cut -d_ -f4 | sed 's/12$//')
-    grep ${lastProcessedDate} ${MAIN}/.processed | grep 179_ice
-    if [[ $? -eq 0 ]]; then
+    n=`grep _${lastProcessedDate} ${MAIN}/.processed | wc -l`
+    if [[ $n -eq 360 ]]; then
         ssh root@${SERVER_IP} <<EOF
 mv ${SERVER_DIR} ${SERVER_DIR}.old && mv ${SERVER_DIR}.new ${SERVER_DIR} && rm -r ${SERVER_DIR}.old
 cd ${SERVER_DIR}
