@@ -10,7 +10,11 @@ if [[ $n -eq 0 ]]; then
     n=`grep _${lastProcessedDate} ${MAIN}/.processed | wc -l`
     if [[ $n -eq 300 ]]; then
         ssh root@${SERVER_IP} <<EOF
-mv ${SERVER_DIR} ${SERVER_DIR}.old && mv ${SERVER_DIR}.new ${SERVER_DIR} && rm -r ${SERVER_DIR}.old
+if [[ -e ${SERVER_DIR} ]]; then
+mv ${SERVER_DIR} ${SERVER_DIR}.old
+fi
+mv ${SERVER_DIR}.new ${SERVER_DIR}
+rm -r ${SERVER_DIR}.old
 cd ${SERVER_DIR}
 python3 ../updateAvails.py
 EOF

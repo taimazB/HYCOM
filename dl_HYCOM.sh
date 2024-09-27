@@ -2,10 +2,11 @@
 
 source ./configs.sh
 
-if [[ -e ${MAIN}/.dl ]]; then
+n=`ls .active_* | wc -l`
+if [[ $n > 0 ]]; then
     exit
 fi
-> ${MAIN}/.dl
+
 
 export ftpLink='https://tds.hycom.org/thredds/fileServer/datasets/ESPC-D-V02/data/forecasts'
 export yesterday=$(date -d 'yesterday' +%Y%m%d)
@@ -94,5 +95,3 @@ parallel -j 4 'DnP_ICE {}' ::: $(seq 0 1 179)
 for file in nc/*_ice.nc; do
     sbatch --export=f=`basename ${file}` ${MAIN}/process_ICE.sh
 done
-
-rm ${MAIN}/.dl
