@@ -10,8 +10,9 @@
 
 date
 source ./configs.sh
+echo $f
 
-python3 ${MAIN}/scripts/cnvMaster_RGBcoded_ICE.py --fileName=$f --minZoom=0 --maxZoom=4 || exit 1
+python3 ${MAIN}/scripts/cnvMaster_RGBcoded_ICE.py --fileName=$f --minZoom=0 --maxZoom=4
 
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')

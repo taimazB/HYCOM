@@ -10,6 +10,7 @@
 
 date
 source ./configs.sh
+echo $f
 
 python3 ${MAIN}/scripts/cnvMaster_RGBcoded_TS.py --fileName=$f --minZoom=0 --maxZoom=4 || exit 1
 
