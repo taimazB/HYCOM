@@ -5,3 +5,4 @@ extracted/
 nc/
 .active
 .processed
+.downloaded

@@ -20,7 +20,7 @@ function DnP_TS() {
     HR=$(printf %03d ${t})
 
     file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_ts3z.nc"
-    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    grep ${file} ${MAIN}/.downloaded >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
@@ -31,7 +31,7 @@ function DnP_TS() {
         wget -nc -t 2 "${ftpLink}/${fileS}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileT} ]] && [[ -e ${MAIN}/nc/${fileS} ]]; then
             cdo merge ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
-            echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
+            echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             touch ${MAIN}/.active_${file}
             rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
@@ -45,7 +45,7 @@ function DnP_UV() {
     HR=$(printf %03d ${t})
 
     file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_uv3z.nc"
-    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    grep ${file} ${MAIN}/.downloaded >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
@@ -55,7 +55,7 @@ function DnP_UV() {
         wget -nc -t 2 "${ftpLink}/${fileV}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileU} ]] && [[ -e ${MAIN}/nc/${fileV} ]]; then
             cdo merge ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
-            echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
+            echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             touch ${MAIN}/.active_${file}
             rm ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
@@ -70,13 +70,13 @@ function DnP_ICE() {
 
     # SURFACE
     file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_ice.nc"
-    grep ${file} ${MAIN}/.processed >/dev/null 2>&1
+    grep ${file} ${MAIN}/.downloaded >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
         wget -nc -t 2 "${ftpLink}/${file}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${file} ]]; then
-            echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.processed
+            echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             touch ${MAIN}/.active_${file}
             ##  Submit all sur files together later
         fi

@@ -23,6 +23,7 @@ saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
 
     cd ${MAIN}
     rm ${MAIN}/.active_$f
+    echo -e "$(date +%F_%T)\t${f}" >>${MAIN}/.processed
     ./finalize.sh
 ) &
 
