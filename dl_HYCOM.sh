@@ -49,6 +49,7 @@ function DnP_UV() {
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
+        mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
         fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_u3z.nc"
         fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_v3z.nc"
         wget -nc -t 2 "${ftpLink}/${fileU}" -P ${MAIN}/nc
@@ -74,6 +75,7 @@ function DnP_ICE() {
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
+        mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
         wget -nc -t 2 "${ftpLink}/${file}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${file} ]]; then
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
