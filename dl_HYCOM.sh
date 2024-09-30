@@ -94,6 +94,9 @@ parallel -j 4 'DnP_UV {}' ::: $(seq 0 3 177)
 # parallel -j 4 'DnP_SUR {}' ::: $(seq 0 1 177)
 parallel -j 4 'DnP_ICE {}' ::: $(seq 0 1 179)
 
-for file in nc/*_ice.nc; do
-    sbatch --export=f=`basename ${file}` ${MAIN}/process_ICE.sh
-done
+n=`ls ${MAIN}/nc/*_ice.nc | wc -l`
+if [[ $n -gt 0 ]]; then
+    for file in nc/*_ice.nc; do
+        sbatch --export=f=`basename ${file}` ${MAIN}/process_ICE.sh
+    done
+fi
