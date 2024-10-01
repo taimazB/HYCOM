@@ -8,7 +8,8 @@ if [[ $n > 0 ]]; then
 fi
 
 
-export ftpLink='https://tds.hycom.org/thredds/fileServer/datasets/ESPC-D-V02/data/forecasts'
+# export ftpLink='https://tds.hycom.org/thredds/fileServer/datasets/ESPC-D-V02/data/forecasts'
+export ftpLink='https://data.hycom.org/datasets/ESPC-D-V02/data/forecasts'
 export yesterday=$(date -d 'yesterday' +%Y%m%d)
 
 ############################################################################
