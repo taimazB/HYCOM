@@ -10,7 +10,7 @@ fi
 
 # export ftpLink='https://tds.hycom.org/thredds/fileServer/datasets/ESPC-D-V02/data/forecasts'
 export ftpLink='https://data.hycom.org/datasets/ESPC-D-V02/data/forecasts'
-export lastAvailDate=`curl ${ftpLink}/ | grep hycom | tail -1 | sed 's/.*glby008_\(.*\)12_t.*/\1/'`
+export yesterday=$(date -d 'yesterday' +%Y%m%d)
 
 ############################################################################
 ##  FUNCTIONS
@@ -20,15 +20,15 @@ function DnP_TS() {
     t=$1
     HR=$(printf %03d ${t})
 
-    file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${lastAvailDate}12_t0${HR}_ts3z.nc"
+    file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_ts3z.nc"
     grep ${file} ${MAIN}/.downloaded >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
         touch ${MAIN}/.active_${file}
         mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
-        fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${lastAvailDate}12_t0${HR}_t3z.nc"
-        fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${lastAvailDate}12_t0${HR}_s3z.nc"
+        fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_t3z.nc"
+        fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_s3z.nc"
         wget -nc -t 2 "${ftpLink}/${fileT}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileS}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileT} ]] && [[ -e ${MAIN}/nc/${fileS} ]]; then
@@ -48,15 +48,15 @@ function DnP_UV() {
     t=$1
     HR=$(printf %03d ${t})
 
-    file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${lastAvailDate}12_t0${HR}_uv3z.nc"
+    file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_uv3z.nc"
     grep ${file} ${MAIN}/.downloaded >/dev/null 2>&1
 
     ##  ONLY PROCEED IF FILE IS NOT PROCESSED ALREADY
     if [[ $? -ne 0 ]]; then
         touch ${MAIN}/.active_${file}
         mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
-        fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${lastAvailDate}12_t0${HR}_u3z.nc"
-        fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${lastAvailDate}12_t0${HR}_v3z.nc"
+        fileU="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_u3z.nc"
+        fileV="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_v3z.nc"
         wget -nc -t 2 "${ftpLink}/${fileU}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileV}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileU} ]] && [[ -e ${MAIN}/nc/${fileV} ]]; then
