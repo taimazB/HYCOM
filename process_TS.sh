@@ -24,5 +24,7 @@ saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
     done
 ) &
 
-rm ${MAIN}/nc/$f
 date
+
+cd ${MAIN}
+bash ./process_TS_OceanGNS.sh $f

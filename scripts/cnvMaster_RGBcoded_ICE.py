@@ -155,8 +155,8 @@ lonNC = nc.variables['lon'][:].data
 latNC = nc.variables['lat'][:].data
 
 ##  0:360 -> -180:180
-lonNC[lonNC >= 180] -= 360
-lonNC = np.roll(lonNC, int(len(lonNC)/2))
+# lonNC[lonNC >= 180] -= 360
+# lonNC = np.roll(lonNC, int(len(lonNC)/2))
 
 ##  MERCATOR
 R = 6378137

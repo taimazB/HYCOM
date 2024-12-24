@@ -1,11 +1,11 @@
 source ./configs.sh
 
-# f=$1
+f=$1
 
-# date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
-# hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
-export fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${date}12_t0${HR}_t3z.nc"
-export fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${date}12_t0${HR}_s3z.nc"
+date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
+hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
+# export fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${date}12_t0${HR}_t3z.nc"
+# export fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${date}12_t0${HR}_s3z.nc"
 
 export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
 levels=(5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0)
@@ -26,7 +26,7 @@ mkdir -p ${extractDirT}
 function extTemperature {
     level=$1
     file=${extractDirT}/${MODEL}_temperature_${saveDateTime}_${level}.nc
-    cdo -O -sellevel,${level} ${MAIN}/nc/${fileT} ${file}.1
+    cdo -O -select,name=water_temp -sellevel,${level} ${MAIN}/nc/${f} ${file}.1
     ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
     cdo -z zip_1 -chname,water_temp,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.*
@@ -52,7 +52,7 @@ mkdir -p ${extractDirS}
 function extSalinity {
     level=$1
     file=${extractDirS}/${MODEL}_salinity_${saveDateTime}_${level}.nc
-    cdo -O -sellevel,${level} ${MAIN}/nc/${fileS} ${file}.1
+    cdo -O -select,name=salinity -sellevel,${level} ${MAIN}/nc/${f} ${file}.1
     ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
     cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.*
@@ -107,5 +107,5 @@ ls | parallel "python3 /home/taimaz/scripts/ncZip.py {}"
     ./finalize.sh
 ) &
 
-rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
+rm ${MAIN}/nc/$f
 date

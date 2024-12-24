@@ -34,9 +34,8 @@ function DnP_TS() {
         if [[ -e ${MAIN}/nc/${fileT} ]] && [[ -e ${MAIN}/nc/${fileS} ]]; then
             cdo merge -sellonlatbox,-180,180,-90,90 ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
-            # rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
+            rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
-            sbatch --export=date=${yesterday} --export=HR=${HR} ${MAIN}/process_TS_OceanGNS.sh
         else
             rm ${MAIN}/.active_${file}
         fi
@@ -61,7 +60,7 @@ function DnP_UV() {
         wget -nc -t 2 "${ftpLink}/${fileV}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileU} ]] && [[ -e ${MAIN}/nc/${fileV} ]]; then
             # cdo merge ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
-            cdo merge -sellonlatbox,-180,180,-90,90 ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
+            cdo -sellonlatbox,-180,180,-90,90 -merge ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             rm ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh
@@ -85,6 +84,8 @@ function DnP_ICE() {
         mkdir ${MAIN}/nc ${MAIN}/logs 2>/dev/null
         wget -nc -t 2 "${ftpLink}/${file}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${file} ]]; then
+            cdo -sellonlatbox,-180,180,-90,90 ${MAIN}/nc/${file} ${MAIN}/nc/${file}.1
+            mv ${MAIN}/nc/${file}.1 ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             ##  Submit all sur files together later
         else

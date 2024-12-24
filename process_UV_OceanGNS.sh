@@ -1,4 +1,4 @@
-source ../configs.sh
+source ./configs.sh
 
 f=$1
 
@@ -11,24 +11,24 @@ export extractDir=${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime}
 
 function archive {
     field=$1
-    rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" --rsync-path="mkdir -p ${SERVER_DIR}/${field}; rsync" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/${field}
+    rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT_OG}" --rsync-path="mkdir -p ${SERVER_DIR_OG}/${field}; rsync" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP_OG}:${SERVER_DIR_OG}/${field}
 }
 
 
 ##  Extract u & v
 mkdir -p ${extractDir}
-cdo -O -select,name=water_u,water_v -sellonlatbox,-180,180,-90,90 $f ${extractDir}/uv3z.nc
+# cdo -O -select,name=water_u,water_v -sellonlatbox,-180,180,-90,90 $f ${extractDir}/uv3z.nc
 function extCurrent {
     level=$1
     file=${extractDir}/${MODEL}_current_${saveDateTime}_${level}.nc
-    cdo -O -sellevel,${level} ${extractDir}/uv3z.nc ${file}.1
+    cdo -O -sellevel,${level} ${MAIN}/nc/$f ${file}.1
     ncwa -4 -L1 -O -a time,depth ${file}.1 ${file}.1
     cdo -O -z zip_1 -chname,water_u,u -chname,water_v,v -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.1
 }
 export -f extCurrent
 parallel "extCurrent {}" ::: ${levels[@]}
-rm ${extractDir}/uv3z.nc
+# rm ${extractDir}/uv3z.nc
 
 
 ##  Depth average (for PP)
@@ -36,15 +36,28 @@ cdo ensmean ${extractDir}/*.nc ${extractDir}/${MODEL}_${field}_${saveDateTime}_m
 
 
 ##  Extract bottom u & v
-file=${extractDir}/${MODEL}_current_${saveDateTime}_bottom.nc
-cdo -O -select,name=water_u_bottom,water_v_bottom -sellonlatbox,-180,180,-90,90 $f ${file}.1
-ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-cdo -O -z zip_1 -chname,water_u_bottom,u -chname,water_v_bottom,v -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
-rm ${file}.1
+# cd ${extractDir}
+# file=${extractDir}/${MODEL}_current_${saveDateTime}_bottom.nc
+# cdo -O -select,name=water_u_bottom,water_v_bottom -sellonlatbox,-180,180,-90,90 ${MAIN}/nc/$f ${file}.1
+# ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
+# cdo -O -z zip_1 -chname,water_u_bottom,u -chname,water_v_bottom,v -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
+# rm ${file}.1
 
 
 ##  EXTRA ZIP
 cd ${extractDir}
 ls | parallel "python3 /home/taimaz/scripts/ncZip.py {}"
 
-archive current &
+###################################################################################
+##  ARCHIEVE
+(
+    cd ${MAIN}
+    archive current
+
+    rm ${MAIN}/.active_$f
+    echo -e "$(date +%F_%T)\t${f}" >>${MAIN}/.processed
+    ./finalize.sh
+) &
+
+rm ${MAIN}/nc/$f
+date

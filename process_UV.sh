@@ -14,15 +14,15 @@ echo $f
 
 python3 ${MAIN}/scripts/cnvMaster_current.py --fileName=$f --minZoom=0 --maxZoom=4
 
-
 date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
 hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
 saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
 
 (
-    cd ${MAIN}
     rsync -aur --rsync-path="mkdir -p ${SERVER_DIR}.new/current && rsync" ${MAIN}/tiles/current/${saveDateTime} root@${SERVER_IP}:${SERVER_DIR}.new/current/
 ) &
 
-rm ${MAIN}/nc/$f
 date
+
+cd ${MAIN}
+bash ./process_UV_OceanGNS.sh $f
