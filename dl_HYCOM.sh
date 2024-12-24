@@ -32,7 +32,7 @@ function DnP_TS() {
         wget -nc -t 2 "${ftpLink}/${fileT}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileS}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileT} ]] && [[ -e ${MAIN}/nc/${fileS} ]]; then
-            cdo merge -sellonlatbox,-180,180,-90,90 ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
+            cdo -sellonlatbox,-180,180,-90,90 -merge ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
