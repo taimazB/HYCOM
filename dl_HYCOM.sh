@@ -32,11 +32,11 @@ function DnP_TS() {
         wget -nc -t 2 "${ftpLink}/${fileT}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileS}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileT} ]] && [[ -e ${MAIN}/nc/${fileS} ]]; then
-            cdo merge ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
+            cdo merge -sellonlatbox,-180,180,-90,90 ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
-            rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
+            # rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
-            sbatch --export=date=${yesterday} --export=hr=${HR} ${MAIN}/process_TS_OceanGNS.sh
+            sbatch --export=date=${yesterday} --export=HR=${HR} ${MAIN}/process_TS_OceanGNS.sh
         else
             rm ${MAIN}/.active_${file}
         fi
@@ -60,7 +60,8 @@ function DnP_UV() {
         wget -nc -t 2 "${ftpLink}/${fileU}" -P ${MAIN}/nc
         wget -nc -t 2 "${ftpLink}/${fileV}" -P ${MAIN}/nc
         if [[ -e ${MAIN}/nc/${fileU} ]] && [[ -e ${MAIN}/nc/${fileV} ]]; then
-            cdo merge ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
+            # cdo merge ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
+            cdo merge -sellonlatbox,-180,180,-90,90 ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV} ${MAIN}/nc/${file}
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             rm ${MAIN}/nc/${fileU} ${MAIN}/nc/${fileV}
             sbatch --export=f=${file} ${MAIN}/process_UV.sh

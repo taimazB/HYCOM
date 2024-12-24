@@ -14,6 +14,8 @@ function archive {
     field=$1
     rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT_OG}" --rsync-path="mkdir -p ${SERVER_DIR_OG}/${field}; rsync" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP_OG}:${SERVER_DIR_OG}/${field}
 }
+export -f archive
+
 
 ###################################################################################
 ##  Extract temperature
@@ -98,10 +100,7 @@ ls | parallel "python3 /home/taimaz/scripts/ncZip.py {}"
 ##  ARCHIEVE
 (
     cd ${MAIN}
-
-    archive temperature
-    archive salinity
-    archive density
+    parallel "archive {}" ::: temperature salinity density
 
     rm ${MAIN}/.active_$f
     echo -e "$(date +%F_%T)\t${f}" >>${MAIN}/.processed

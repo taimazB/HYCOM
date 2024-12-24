@@ -97,7 +97,7 @@ def genTiles(iDepth):
     values = fillnodata(values, mask=~mask, max_search_distance=2)
 
     ##  0:360 -> -180:180
-    values = np.roll(values, int(len(lonNC)/2), axis=1)
+    # values = np.roll(values, int(len(lonNC)/2), axis=1)
     # mask = np.roll(mask, int(len(lonNC)/2), axis=1)
 
     ##  INTERPOLATE
@@ -155,8 +155,8 @@ latNC = nc.variables['lat'][:].data
 depthNC = nc.variables['depth'][:].data
 
 ##  0:360 -> -180:180
-lonNC[lonNC >= 180] -= 360
-lonNC = np.roll(lonNC, int(len(lonNC)/2))
+# lonNC[lonNC >= 180] -= 360
+# lonNC = np.roll(lonNC, int(len(lonNC)/2))
 
 ##  MERCATOR
 R = 6378137

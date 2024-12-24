@@ -20,12 +20,8 @@ hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
 saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
 
 (
-    rsync -aur --rsync-path="mkdir -p ${SERVER_DIR}.new/current && rsync" ${MAIN}/tiles/current/${saveDateTime} root@${SERVER_IP}:${SERVER_DIR}.new/current/
-
     cd ${MAIN}
-    rm ${MAIN}/.active_$f
-    echo -e "$(date +%F_%T)\t${f}" >>${MAIN}/.processed
-    ./finalize.sh
+    rsync -aur --rsync-path="mkdir -p ${SERVER_DIR}.new/current && rsync" ${MAIN}/tiles/current/${saveDateTime} root@${SERVER_IP}:${SERVER_DIR}.new/current/
 ) &
 
 rm ${MAIN}/nc/$f
