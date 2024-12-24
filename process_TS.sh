@@ -22,11 +22,6 @@ saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
     for field in temperature salinity density; do
         rsync -aur --rsync-path="mkdir -p ${SERVER_DIR}.new/${field} && rsync" ${MAIN}/tiles/${field}/${saveDateTime} root@${SERVER_IP}:${SERVER_DIR}.new/${field}/
     done
-
-    cd ${MAIN}
-    rm ${MAIN}/.active_$f
-    echo -e "$(date +%F_%T)\t${f}" >>${MAIN}/.processed
-    ./finalize.sh
 ) &
 
 rm ${MAIN}/nc/$f

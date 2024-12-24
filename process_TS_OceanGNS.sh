@@ -1,27 +1,30 @@
-source ../configs.sh
+source ./configs.sh
 
-f=$1
+# f=$1
 
-date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
-hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
+# date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
+# hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
+export fileT="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${date}12_t0${HR}_t3z.nc"
+export fileS="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${date}12_t0${HR}_s3z.nc"
+
 export saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H)
 levels=(5000 4000 3000 2500 2000 1500 1250 1000 900 800 700 600 500 400 350 300 250 200 150 125 100 90 80 70 60 50 45 40 35 30 25 20 15 12 10 8 6 4 2 0)
 
 function archive {
     field=$1
-    rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT}" --rsync-path="mkdir -p ${SERVER_DIR}/${field}; rsync" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP}:${SERVER_DIR}/${field}
+    rsync -aurq --remove-source-files -e "ssh -p ${SERVER_PORT_OG}" --rsync-path="mkdir -p ${SERVER_DIR_OG}/${field}; rsync" ${MAIN}/extracted/${field}/${MODEL}_${field}_${saveDateTime} ${SERVER_IP_OG}:${SERVER_DIR_OG}/${field}
 }
 
 ###################################################################################
 ##  Extract temperature
 export extractDirT=${MAIN}/extracted/temperature/${MODEL}_temperature_${saveDateTime}
 mkdir -p ${extractDirT}
-cdo -O -select,name=water_temp -sellonlatbox,-180,180,-90,90 $f ${extractDirT}/t3z.nc
+# cdo -O -select,name=water_temp -sellonlatbox,-180,180,-90,90 nc/$f ${extractDirT}/t3z.nc
 
 function extTemperature {
     level=$1
     file=${extractDirT}/${MODEL}_temperature_${saveDateTime}_${level}.nc
-    cdo -O -sellevel,${level} ${extractDirT}/t3z.nc ${file}.1
+    cdo -O -sellevel,${level} ${MAIN}/nc/${fileT} ${file}.1
     ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
     cdo -z zip_1 -chname,water_temp,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.*
@@ -36,18 +39,18 @@ parallel "extTemperature {}" ::: ${levels[@]}
 # ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
 # cdo -z zip_1 -chname,water_temp_bottom,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
 
-rm ${extractDirT}/t3z.nc ${file}.*
+# rm ${extractDirT}/t3z.nc nc/${file}.*
 
 ###################################################################################
 ##  Extract salinity
 export extractDirS=${MAIN}/extracted/salinity/${MODEL}_salinity_${saveDateTime}
 mkdir -p ${extractDirS}
-cdo -O -select,name=salinity -sellonlatbox,-180,180,-90,90 $f ${extractDirS}/s3z.nc
+# cdo -O -select,name=salinity -sellonlatbox,-180,180,-90,90 nc/$f ${extractDirS}/s3z.nc
 
 function extSalinity {
     level=$1
     file=${extractDirS}/${MODEL}_salinity_${saveDateTime}_${level}.nc
-    cdo -O -sellevel,${level} ${extractDirS}/s3z.nc ${file}.1
+    cdo -O -sellevel,${level} ${MAIN}/nc/${fileS} ${file}.1
     ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
     cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.*
@@ -61,8 +64,7 @@ parallel "extSalinity {}" ::: ${levels[@]}
 # ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
 # cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
 
-rm ${extractDirS}/s3z.nc
-rm ${file}.*
+# rm ${extractDirS}/s3z.nc nc/${file}.*
 
 
 ###################################################################################
@@ -95,7 +97,16 @@ ls | parallel "python3 /home/taimaz/scripts/ncZip.py {}"
 ###################################################################################
 ##  ARCHIEVE
 (
+    cd ${MAIN}
+
     archive temperature
     archive salinity
     archive density
+
+    rm ${MAIN}/.active_$f
+    echo -e "$(date +%F_%T)\t${f}" >>${MAIN}/.processed
+    ./finalize.sh
 ) &
+
+rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
+date

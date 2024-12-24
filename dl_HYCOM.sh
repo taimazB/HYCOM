@@ -36,6 +36,7 @@ function DnP_TS() {
             echo -e "$(date +%F_%T)\t${file}" >>${MAIN}/.downloaded
             rm ${MAIN}/nc/${fileT} ${MAIN}/nc/${fileS}
             sbatch --export=f=${file} ${MAIN}/process_TS.sh
+            sbatch --export=date=${yesterday} --export=hr=${HR} ${MAIN}/process_TS_OceanGNS.sh
         else
             rm ${MAIN}/.active_${file}
         fi
@@ -74,7 +75,6 @@ function DnP_ICE() {
     t=$1
     HR=$(printf %03d ${t})
 
-    # SURFACE
     file="US058GCOM-OPSnce.espc-d-031-hycom_fcst_glby008_${yesterday}12_t0${HR}_ice.nc"
     grep ${file} ${MAIN}/.downloaded >/dev/null 2>&1
 
