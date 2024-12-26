@@ -14,16 +14,16 @@ export -f archive
 
 ###################################################################################
 ##  Extract
-cd ${MAIN}/nc
-ncwa -4 -L1 -O -a time,depth ${MAIN}/nc/$f ${MODEL}_ICE_${saveDateTime}.nc.1
-cdo -O -z zip_1 -chname,sic,seaiceFraction -chname,sih,seaiceThickness -chname,lat,latitude -chname,lon,longitude ${MODEL}_ICE_${saveDateTime}.nc.1 ${MODEL}_ICE_${saveDateTime}.nc
+cd ${MAIN}
+ncwa -4 -L1 -O -a time,depth ${MAIN}/nc/$f ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc.1
+cdo -O -z zip_1 -chname,sic,seaiceFraction -chname,sih,seaiceThickness -chname,lat,latitude -chname,lon,longitude ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc.1 ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc
 
 function extract {
     var=$1
     extractDir=${MAIN}/extracted/${var}
     mkdir -p ${extractDir} 2>/dev/null
     file=${extractDir}/${MODEL}_${var}_${saveDateTime}.nc
-    ncks -O -v ${var} ${MODEL}_ICE_${saveDateTime}.nc ${file}
+    ncks -O -v ${var} ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc ${file}
     # python3 /home/taimaz/scripts/ncZip.py ${file}
 }
 export -f extract
