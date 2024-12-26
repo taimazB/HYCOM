@@ -16,5 +16,11 @@ rm -r ${SERVER_DIR}.old
 cd ${SERVER_DIR}
 python3 ../updateAvails.py
 EOF
+
+    ##  OCEANGNS
+    ssh -p ${SERVER_PORT_OG} ${SERVER_IP_OG} <<EOF
+    cd ${SERVER_DIR_OG}
+    bash ./update.sh
+EOF
     fi
 fi

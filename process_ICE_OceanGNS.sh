@@ -24,7 +24,7 @@ function extract {
     mkdir -p ${extractDir} 2>/dev/null
     file=${extractDir}/${MODEL}_${var}_${saveDateTime}.nc
     ncks -O -v ${var} ${MODEL}_ICE_${saveDateTime}.nc ${file}
-    python3 /home/taimaz/scripts/ncZip.py ${file}
+    # python3 /home/taimaz/scripts/ncZip.py ${file}
 }
 export -f extract
 parallel "extract {}" ::: seaiceFraction seaiceThickness
