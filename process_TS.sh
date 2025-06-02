@@ -12,19 +12,19 @@ date
 source ./configs.sh
 echo $f
 
-python3 ${MAIN}/scripts/cnvMaster_RGBcoded_TS.py --fileName=$f --minZoom=0 --maxZoom=4
+# python3 ${MAIN}/scripts/cnvMaster_RGBcoded_TS.py --fileName=$f --minZoom=0 --maxZoom=4
 
-date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
-hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
-saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
+# date=$(echo $f | cut -d_ -f4 | sed 's/12$//')
+# hr=$(echo $f | cut -d_ -f5 | sed 's/t0*//')
+# saveDateTime=$(date -d "${date} 12 +${hr} hours" +%Y%m%d_%H%M)
 
-(
-    for field in temperature salinity density; do
-        rsync -aur --rsync-path="mkdir -p ${SERVER_DIR}.new/${field} && rsync" ${MAIN}/tiles/${field}/${saveDateTime} root@${SERVER_IP}:${SERVER_DIR}.new/${field}/
-    done
-) &
+# (
+#     for field in temperature salinity density; do
+#         rsync -aur --rsync-path="mkdir -p ${SERVER_DIR}.new/${field} && rsync" ${MAIN}/tiles/${field}/${saveDateTime} root@${SERVER_IP}:${SERVER_DIR}.new/${field}/
+#     done
+# ) &
 
-date
+# date
 
 cd ${MAIN}
 bash ./process_TS_OceanGNS.sh $f
