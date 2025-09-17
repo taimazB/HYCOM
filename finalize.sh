@@ -22,5 +22,4 @@ if [[ $n -eq 0 ]]; then
     cd ${SERVER_DIR_OG}
     bash ./update.sh
 EOF
-    fi
 fi
