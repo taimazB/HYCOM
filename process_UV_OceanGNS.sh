@@ -23,7 +23,9 @@ function extCurrent {
     file=${extractDir}/${MODEL}_current_${saveDateTime}_${level}.nc
     cdo -O -sellevel,${level} ${MAIN}/nc/$f ${file}.1
     ncwa -4 -L1 -O -a time,depth ${file}.1 ${file}.1
-    cdo -O -z zip_1 -chname,water_u,u -chname,water_v,v -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
+    # Using a non-thread-safe NetCDF4/HDF5 library in a multi-threaded environment may lead to erroneous results!
+    # Use a thread-safe NetCDF4/HDF5 library or the CDO option -L to avoid such errors.
+    cdo -O -L -z zip_1 -chname,water_u,u -chname,water_v,v -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.1
 }
 export -f extCurrent

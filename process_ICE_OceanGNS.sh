@@ -16,7 +16,7 @@ export -f archive
 ##  Extract
 cd ${MAIN}
 ncwa -4 -L1 -O -a time,depth ${MAIN}/nc/$f ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc.1
-cdo -O -z zip_1 -chname,sic,seaiceFraction -chname,sih,seaiceThickness -chname,lat,latitude -chname,lon,longitude ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc.1 ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc
+cdo -O -L -z zip_1 -chname,sic,seaiceFraction -chname,sih,seaiceThickness -chname,lat,latitude -chname,lon,longitude ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc.1 ${MAIN}/nc/${MODEL}_ICE_${saveDateTime}.nc
 
 function extract {
     var=$1

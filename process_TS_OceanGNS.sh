@@ -28,7 +28,7 @@ function extTemperature {
     file=${extractDirT}/${MODEL}_temperature_${saveDateTime}_${level}.nc
     cdo -O -select,name=water_temp -sellevel,${level} ${MAIN}/nc/${f} ${file}.1
     ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-    cdo -z zip_1 -chname,water_temp,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
+    cdo -z -L zip_1 -chname,water_temp,temperature -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.*
 }
 export -f extTemperature
@@ -54,7 +54,7 @@ function extSalinity {
     file=${extractDirS}/${MODEL}_salinity_${saveDateTime}_${level}.nc
     cdo -O -select,name=salinity -sellevel,${level} ${MAIN}/nc/${f} ${file}.1
     ncwa -O -4 -L1 -a time,depth ${file}.1 ${file}.1
-    cdo -z zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
+    cdo -z -L zip_1 -chname,lat,latitude -chname,lon,longitude ${file}.1 ${file}
     rm ${file}.*
 }
 export -f extSalinity
